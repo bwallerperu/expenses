@@ -1,0 +1,41 @@
+# SETUP AND DEPLOYMENT GUIDE
+
+## 1. Local Setup
+# Install dependencies
+pip install -r requirements.txt
+
+# Run locally (Requires Google Application Credentials for surfn-peru project)
+python app.py
+
+## 2. Infrastructure Setup (One-time)
+# Create Firestore database (done)
+# gcloud firestore databases create --project=surfn-peru --location=us-central1 --type=firestore-native --database=expenses
+
+## 3. Deploy to Cloud Run
+# Build and deploy the application
+gcloud run deploy expenses-app \
+    --source . \
+    --project=surfn-peru \
+    --region=us-central1 \
+    --allow-unauthenticated \
+    --service-account=expenses-runner@surfn-peru.iam.gserviceaccount.com
+
+# Note: Ensure the service account has "Cloud Datastore User" permissions on the 'expenses' database.
+
+## 4. Firestore Composite Indexes
+# Run these to enable advanced filtering and sorting (takes a few minutes to build)
+
+# Index for: User + Date Sort
+gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=ejecutivo,order=ascending --field-config=field-path=fecha,order=descending
+
+# Index for: User + Category + Date Sort
+gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=ejecutivo,order=ascending --field-config=field-path=categoria,order=ascending --field-config=field-path=fecha,order=descending
+
+# Index for: User + Client + Date Sort
+gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=ejecutivo,order=ascending --field-config=field-path=cliente,order=ascending --field-config=field-path=fecha,order=descending
+
+# Index for: Category + Date Sort (Admin View)
+gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=categoria,order=ascending --field-config=field-path=fecha,order=descending
+
+# Index for: Client + Date Sort (Admin View)
+gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=cliente,order=ascending --field-config=field-path=fecha,order=descending
