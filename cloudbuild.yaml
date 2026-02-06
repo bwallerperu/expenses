@@ -1,26 +1,31 @@
 steps:
   # 1. Build the container image
+  # We always build to ensure the code is valid/testable
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/expenses-app:$TAG_NAME', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/expenses-app:latest', '.']
 
   # 2. Push the image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:$TAG_NAME']
+    args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:latest']
 
-  # 3. Deploy to Cloud Run
+  # 3. Conditional Deploy to Cloud Run
+  # This step only runs the 'gcloud run deploy' if the commit message contains '[deploy]'
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - 'deploy'
-      - 'expenses-app'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/expenses-app:$TAG_NAME'
-      - '--region'
-      - 'us-central1'
-      - '--allow-unauthenticated'
-      - '--service-account'
-      - 'expenses-runner@surfn-peru.iam.gserviceaccount.com'
+      - '-c'
+      - |
+        if [[ "$(git log -1 --pretty=%B)" == *"[deploy]"* ]]; then
+          echo "Deployment keyword [deploy] found! Proceeding with Cloud Run deployment..."
+          gcloud run deploy expenses-app \
+            --image gcr.io/$PROJECT_ID/expenses-app:latest \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --service-account expenses-runner@surfn-peru.iam.gserviceaccount.com
+        else
+          echo "No [deploy] found in commit message. Skipping deployment."
+          echo "Full commit message: $(git log -1 --pretty=%B)"
+        fi
 
 images:
-  - 'gcr.io/$PROJECT_ID/expenses-app:$TAG_NAME'
+  - 'gcr.io/$PROJECT_ID/expenses-app:latest'

@@ -45,19 +45,37 @@ gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_
 gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser" --condition=None
 
 # 3. Create the Trigger (Terminal)
+# This trigger fires on every push to 'main', but only deploys if '[deploy]' is in the commit message.
 gcloud beta builds triggers create github \
-    --name="deploy-on-tag-99" \
+    --name="deploy-on-commit-msg" \
     --repo-owner="bwallerperu" \
     --repo-name="expenses" \
-    --tag-pattern=".*\.99$" \
+    --branch-pattern="^main$" \
+    --region="global" \
     --build-config="cloudbuild.yaml"
+
+# 4. Create the Service Account (Terminal)
+gcloud iam service-accounts create expenses-runner \
+    --display-name="Expenses App Runner" \
+    --project=surfn-peru
+
+gcloud iam service-accounts add-iam-policy-binding \
+    expenses-runner@surfn-peru.iam.gserviceaccount.com \
+    --member="serviceAccount:1087744597190@cloudbuild.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountUser" \
+    --project=surfn-peru
+    
+gcloud projects add-iam-policy-binding surfn-peru \
+    --member="serviceAccount:1087744597190@cloudbuild.gserviceaccount.com" \
+    --role="roles/run.admin" \
+    --project=surfn-peru
 
 # 4. Trigger Deployment (Terminal)
 git add .
-git commit -m "Deployment v1.0.99"
+git commit -m "Your update message [deploy]"
 git push origin main
-git tag v1.0.99
-git push origin v1.0.99
+
+# Note: If you omit '[deploy]', Cloud Build will still build the image but SKIP the deployment.
 
 ## 4. Firestore Composite Indexes
 # Run these to enable advanced filtering and sorting (takes a few minutes to build)
