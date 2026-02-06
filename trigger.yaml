@@ -8,7 +8,6 @@ github:
 id: 498aeaf0-1ed1-4ff2-a537-0c48deb615b1
 name: deploy-on-commit-msg
 resourceName: projects/surfn-peru/locations/global/triggers/498aeaf0-1ed1-4ff2-a537-0c48deb615b1
-filter: _COMMIT_MESSAGE.matches(".*\\[deploy\\].*")
 substitutions:
   _COMMIT_MESSAGE: $(commit.message)
-  
+filter: build.substitutions['_COMMIT_MESSAGE'].matches(".*\\[deploy\\].*")  
