@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Gastos - Ejecutivo Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .custom-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="loginView" class="min-h-[80vh] flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div
+                    class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">Acceso Ejecutivo</h1>
+                <p class="text-slate-500 text-sm">Ingrese sus credenciales para reportar</p>
+            </div>
+
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Usuario (Ejecutivo)</label>
+                    <select id="loginUser" required
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <option value="" disabled selected>Seleccione su nombre...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••"
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <p class="text-[10px] text-slate-400 mt-1 italic">* Use '123456' para demostración</p>
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-blue-100">
+                    Iniciar Sesión
+                </button>
+            </form>
+            <div id="loginError" class="mt-4 text-red-500 text-sm text-center font-medium hidden">
+                Contraseña incorrecta. Intente de nuevo.
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL (DASHBOARD) -->
+    <div id="mainView" class="max-w-6xl mx-auto hidden">
+        <!-- Header con Logout -->
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-left">
+                <h1 class="text-3xl font-bold text-slate-800">Reporte de Gastos</h1>
+                <p class="text-slate-500">Sesión iniciada como: <span id="currentUserLabel"
+                        class="font-bold text-blue-600"></span></p>
+            </div>
+            <button onclick="logout()"
+                class="text-sm font-semibold text-slate-500 hover:text-red-600 flex items-center transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+                </svg>
+                Cerrar Sesión
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Formulario Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-2xl custom-shadow border border-slate-100">
+                    <h2 class="text-xl font-semibold mb-6 text-slate-700 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Nuevo Registro
+                    </h2>
+
+                    <form id="expenseForm" class="space-y-4">
+                        <!-- Ejecutivo (Bloqueado) -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Ejecutivo Registrador</label>
+                            <input type="text" id="ejecutivo" readonly
+                                class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                        </div>
+
+                        <!-- Fecha -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha del Recibo</label>
+                            <input type="date" id="fecha" required
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+
+                        <!-- Categoría -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+                            <select id="categoria" required
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <option value="" disabled selected>Seleccione categoría...</option>
+                            </select>
+                        </div>
+
+                        <!-- Establecimiento -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Establecimiento</label>
+                            <input type="text" id="establecimiento" required placeholder="Nombre del local..."
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+
+                        <!-- Cliente -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Cliente Vinculado</label>
+                            <select id="cliente" required
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <option value="" disabled selected>Seleccione cliente...</option>
+                            </select>
+                        </div>
+
+                        <!-- Monto -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Monto (S/.)</label>
+                            <input type="number" id="monto" step="0.01" required placeholder="0.00"
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+
+                        <!-- Descripción -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Descripción corta</label>
+                            <textarea id="descripcion" rows="2" placeholder="Notas adicionales..."
+                                class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
+                        </div>
+
+                        <button type="submit" id="btnSubmit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-lg shadow-blue-200 flex justify-center items-center">
+                            <span>Registrar Gasto</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Listado y Filtros Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Tabla de Registros -->
+                <div class="bg-white p-6 rounded-2xl custom-shadow border border-slate-100 overflow-hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <div class="flex items-center">
+                            <h2 class="text-xl font-semibold text-slate-700 mr-4">Registros</h2>
+                            <span id="recordCount"
+                                class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0
+                                Registros</span>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="toggleFilters()"
+                                class="p-2 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
+                                title="Filtros Avanzados">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z">
+                                    </path>
+                                </svg>
+                            </button>
+                            <div class="relative flex-1 md:w-64">
+                                <input type="text" id="searchInput" placeholder="Buscar local..."
+                                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm">
+                                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Filtros Avanzados -->
+                    <div id="filterPanel"
+                        class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Desde</label>
+                                <input type="date" id="filterDateFrom"
+                                    class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Hasta</label>
+                                <input type="date" id="filterDateTo"
+                                    class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Categoría</label>
+                                <select id="filterCategory"
+                                    class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="">Todas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Cliente</label>
+                                <select id="filterClient"
+                                    class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="clearFilters()"
+                                class="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-2 transition-colors">Limpiar</button>
+                            <button onclick="fetchExpenses()"
+                                class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Aplicar
+                                Filtros</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100">
+                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Lugar / Cliente
+                                    </th>
+                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Categoría</th>
+                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Monto</th>
+                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTable" class="text-sm">
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-400 italic">Cargando registros...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="toast"
+                    class="fixed bottom-5 right-5 bg-blue-600 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+                    Mensaje del sistema
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE DATOS
+        const categorias = [
+            "Auto-Gasolina", "Auto-Estacionamiento", "Auto-Otros",
+            "Gasto-Rep-Comida", "Gasto-Rep-Otros", "Servicios-Misc", "Viajes-Misc"
+        ];
+
+        const ejecutivosDB = {
+            "Ignacio Espinosa": "123456", "Jose Espinosa": "123456", "Guillermo Bertozi": "123456",
+            "Gerente-1": "123456", "Gerente-2": "123456", "Gerente-3": "123456", "Gerente-4": "123456", "Gerente-5": "123456"
+        };
+
+        const clientes = [
+            "Delosi", "Cliente-1", "Cliente-2", "Cliente-3", "Cliente-4",
+            "Cliente-5", "Cliente-6", "Cliente-7", "Cliente-8", "Cliente-9",
+            "Cliente-10", "Cliente-11", "Cliente-12", "Cliente-13", "Cliente-14", "Cliente-15"
+        ];
+
+        let currentUser = null;
+
+        // INICIALIZACIÓN
+        window.onload = () => {
+            const loginUserSelect = document.getElementById('loginUser');
+            const categoriaSelect = document.getElementById('categoria');
+            const clienteSelect = document.getElementById('cliente');
+            const filterCategory = document.getElementById('filterCategory');
+            const filterClient = document.getElementById('filterClient');
+
+            Object.keys(ejecutivosDB).sort().forEach(e => loginUserSelect.add(new Option(e, e)));
+
+            categorias.sort().forEach(c => {
+                categoriaSelect.add(new Option(c, c));
+                filterCategory.add(new Option(c, c));
+            });
+
+            clientes.sort().forEach(cl => {
+                clienteSelect.add(new Option(cl, cl));
+                filterClient.add(new Option(cl, cl));
+            });
+
+            // Event listener para búsqueda rápida
+            document.getElementById('searchInput').addEventListener('input', debounce(fetchExpenses, 500));
+        };
+
+        // UI HELPERS
+        function toggleFilters() {
+            const panel = document.getElementById('filterPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function clearFilters() {
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterClient').value = '';
+            fetchExpenses();
+        }
+
+        // LÓGICA DE LOGIN
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+            const errorMsg = document.getElementById('loginError');
+
+            if (ejecutivosDB[user] === pass) {
+                currentUser = user;
+                showDashboard();
+                fetchExpenses();
+            } else {
+                errorMsg.classList.remove('hidden');
+                setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+            }
+        });
+
+        function showDashboard() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('mainView').classList.remove('hidden');
+            document.getElementById('currentUserLabel').innerText = currentUser;
+            document.getElementById('ejecutivo').value = currentUser;
+            document.getElementById('fecha').valueAsDate = new Date();
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginPass').value = '';
+            document.getElementById('mainView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+        }
+
+        // COMUNICACIÓN CON API
+        async function fetchExpenses() {
+            if (!currentUser) return;
+
+            const search = document.getElementById('searchInput').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            const category = document.getElementById('filterCategory').value;
+            const client = document.getElementById('filterClient').value;
+
+            let url = `/api/expenses?user_id=${encodeURIComponent(currentUser)}&search=${encodeURIComponent(search)}`;
+            if (dateFrom) url += `&date_from=${dateFrom}`;
+            if (dateTo) url += `&date_to=${dateTo}`;
+            if (category) url += `&category=${encodeURIComponent(category)}`;
+            if (client) url += `&client=${encodeURIComponent(client)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.status === "error") {
+                    console.error("Error del servidor:", data.message);
+                    showToast("Error de Firestore (ver consola)");
+                    return;
+                }
+
+                updateUI(data);
+            } catch (error) {
+                console.error("Error al obtener gastos:", error);
+                showToast("Error al cargar registros");
+            }
+        }
+
+        document.getElementById('expenseForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerText = 'Registrando...';
+
+            const entry = {
+                ejecutivo: currentUser,
+                fecha: document.getElementById('fecha').value,
+                categoria: document.getElementById('categoria').value,
+                establecimiento: document.getElementById('establecimiento').value,
+                cliente: document.getElementById('cliente').value,
+                monto: parseFloat(document.getElementById('monto').value),
+                descripcion: document.getElementById('descripcion').value,
+                moneda: "PEN",
+                reportado_en: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/api/expenses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                });
+
+                if (response.ok) {
+                    showToast("Gasto registrado correctamente");
+                    this.reset();
+                    document.getElementById('ejecutivo').value = currentUser;
+                    document.getElementById('fecha').valueAsDate = new Date();
+                    fetchExpenses();
+                } else {
+                    throw new Error("Fallo en el servidor");
+                }
+            } catch (error) {
+                showToast("Error al guardar el registro");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Registrar Gasto';
+            }
+        });
+
+        async function deleteRecord(id) {
+            if (!confirm("¿Está seguro de eliminar este registro?")) return;
+
+            try {
+                const response = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast("Registro eliminado");
+                    fetchExpenses();
+                } else {
+                    showToast("Error al eliminar");
+                }
+            } catch (error) {
+                showToast("Error de conexión");
+            }
+        }
+
+        function updateUI(expenseData) {
+            const tableBody = document.getElementById('recordsTable');
+            document.getElementById('recordCount').innerText = `${expenseData.length} Registros`;
+
+            if (expenseData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">No se encontraron registros</td></tr>';
+            } else {
+                tableBody.innerHTML = expenseData.map(item => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-2 text-slate-500 font-medium">${item.fecha}</td>
+                        <td class="py-4 px-2">
+                            <div class="font-bold text-slate-800">${item.establecimiento}</div>
+                            <div class="text-[11px] text-blue-500 font-medium uppercase font-bold">${item.cliente}</div>
+                            ${currentUser.startsWith('Gerente-') ? `<div class="text-[9px] text-slate-400 italic">Por: ${item.ejecutivo}</div>` : ''}
+                        </td>
+                        <td class="py-4 px-2">
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase">${item.categoria}</span>
+                        </td>
+                        <td class="py-4 px-2 font-bold text-slate-900">S/. ${item.monto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td>
+                        <td class="py-4 px-2 text-right">
+                            <button onclick="deleteRecord('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        function debounce(func, timeout = 300) {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => { func.apply(this, args); }, timeout);
+            };
+        }
+    </script>
+</body>
+
+</html>
