@@ -12,7 +12,9 @@ python app.py
 # gcloud firestore databases create --project=surfn-peru --location=us-central1 --type=firestore-native --database=expenses
 
 ## 3. Deploy to Cloud Run
-# Build and deploy the application
+
+### Option A: All-in-one command (Builds, Pushes, and Deploys)
+# This is the easiest way. It uses Cloud Build and Container Registry automatically.
 gcloud run deploy expenses-app \
     --source . \
     --project=surfn-peru \
@@ -20,9 +22,46 @@ gcloud run deploy expenses-app \
     --allow-unauthenticated \
     --service-account=expenses-runner@surfn-peru.iam.gserviceaccount.com
 
-# Note: Ensure the service account has "Cloud Datastore User" permissions on the 'expenses' database.
+### Option B: Manual Build, Push, and Deploy
+# 1. Build and push the image to Artifact Registry/Container Registry
+gcloud builds submit --tag gcr.io/surfn-peru/expenses-app --project=surfn-peru
 
-## 4. Firestore Composite Indexes
+### Option C: Automated Build Trigger (CD)
+# Automatically builds and deploys when you push a tag like 'v1.0.99' to GitHub.
+# 1. Ensure your GitHub repo is connected to the project in Cloud Build console.
+# 2. Run this command to create the trigger:
+
+gcloud beta builds triggers create github \
+    --name="deploy-on-tag-99" \
+    --repo-owner="bwallerperu" \
+    --repo-name="expenses" \
+    --tag-pattern=".*\.99$" \
+    --build-config="cloudbuild.yaml" \
+    --project=surfn-peru
+
+# Note: The trigger will use the new 'cloudbuild.yaml' file to handle the build and deployment.
+
+## 4. CD Prerequisites (Authorization & Permissions)
+
+### A. Connect GitHub to GCP (One-time)
+# 1. Go to: https://console.cloud.google.com/cloud-build/triggers
+# 2. Click "Manage Repositories" -> "Connect Repository".
+# 3. Select "GitHub (Cloud Build GitHub App)" and authorize the 'bwallerperu/expenses' repo.
+
+### B. Grant Cloud Build Permissions (Cloud Shell/Terminal)
+# The Cloud Build service account needs permission to deploy to Cloud Run.
+# Run these commands REPLACE with your project number if needed, but this shortcut works:
+
+PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
+CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+
+# Grant Cloud Run Admin
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin"
+
+# Grant Service Account User
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser"
+
+## 5. Firestore Composite Indexes
 # Run these to enable advanced filtering and sorting (takes a few minutes to build)
 
 # Index for: User + Date Sort
