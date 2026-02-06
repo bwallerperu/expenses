@@ -41,8 +41,8 @@ gcloud config set project surfn-peru
 PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
 CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
 
-gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin"
-gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser"
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin" --condition=None
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser" --condition=None
 
 # 3. Create the Trigger (Terminal)
 gcloud beta builds triggers create github \
