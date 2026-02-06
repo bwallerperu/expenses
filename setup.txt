@@ -29,38 +29,35 @@ gcloud builds submit --tag gcr.io/surfn-peru/expenses-app --project=surfn-peru
 ### Option C: Automated Build Trigger (CD)
 # Automatically builds and deploys when you push a tag like 'v1.0.99' to GitHub.
 
-#### Step 1: Connect GitHub to GCP (One-time)
-# 1. Open Google Cloud Console: https://console.cloud.google.com/cloud-build/triggers
-# 2. Click "Manage Repositories" -> "Connect Repository".
-# 3. Select "GitHub (Cloud Build GitHub App 1st gen)" and click "Continue".
-# 4. Authorize Google Cloud Build to access your GitHub account.
-# 5. Select 'bwallerperu/expenses' from the list and click "Connect".
+# 1. Prerequisites (GCP Console Handshake)
+# Unfortunately, GitHub OAuth authorization MUST be done via browser once:
+# Go to: https://console.cloud.google.com/cloud-build/triggers
+# Click "Manage Repositories" -> "Connect Repository" -> "GitHub App (1st gen)".
+# Authorize the app and select 'bwallerperu/expenses'.
 
-#### Step 2: Grant Cloud Build Permissions
-# The Cloud Build service account needs permission to deploy to Cloud Run.
-# Run these commands in your local terminal or Cloud Shell:
-
+# 2. Configure IAM Permissions (Terminal)
+# Set project and grant Cloud Build the roles to deploy to Cloud Run.
+gcloud config set project surfn-peru
 PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
 CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
 
-# Grant "Cloud Run Admin" role
 gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin"
-
-# Grant "Service Account User" role
 gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser"
 
-#### Step 3: Create the Trigger
-# Run this command to link the GitHub tag '.99' to the 'cloudbuild.yaml' file:
-
+# 3. Create the Trigger (Terminal)
 gcloud beta builds triggers create github \
     --name="deploy-on-tag-99" \
     --repo-owner="bwallerperu" \
     --repo-name="expenses" \
     --tag-pattern=".*\.99$" \
-    --build-config="cloudbuild.yaml" \
-    --project=surfn-peru
+    --build-config="cloudbuild.yaml"
 
-# Note: The trigger will use the 'cloudbuild.yaml' file in your repo to run the deploy.
+# 4. Trigger Deployment (Terminal)
+git add .
+git commit -m "Deployment v1.0.99"
+git push origin main
+git tag v1.0.99
+git push origin v1.0.99
 
 ## 4. Firestore Composite Indexes
 # Run these to enable advanced filtering and sorting (takes a few minutes to build)
