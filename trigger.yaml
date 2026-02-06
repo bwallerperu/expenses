@@ -26,4 +26,4 @@ github:
 # git push origin v1.2[deploy]
 
 # Do this once in your terminal
-# git config --global alias.deploy '!git tag "$(git log -1 --pretty=%B | head -n 1)[deploy]" && git push origin --tags'
+# git config --global alias.deploy '!git tag "$(git log -1 --pretty=%B | head -n 1 | tr " " "-")-deploy" && git push origin --tags'
