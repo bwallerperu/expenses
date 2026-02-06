@@ -4,7 +4,6 @@ steps:
     script: |
       if [[ "${_DEPLOY_CHECK}" == *"[deploy]"* ]]; then
         echo "Found [deploy] tag. Proceeding..."
-        exit 0 
       else
         echo "No [deploy] tag found. Skipping build."
         exit 1 # Use exit 1 if you want the build to show as 'Failed'
