@@ -75,7 +75,7 @@ gcloud projects add-iam-policy-binding surfn-peru \
 # !!! CRITICAL: Grant Firestore permissions to the Runner service account !!!
 gcloud projects add-iam-policy-binding surfn-peru \
     --member="serviceAccount:expenses-runner@surfn-peru.iam.gserviceaccount.com" \
-    --role="roles/datastore.user" \\
+    --role="roles/datastore.user" \
     --condition=None \
     --project=surfn-peru
 
@@ -103,3 +103,6 @@ gcloud firestore indexes composite create --project=surfn-peru --database=expens
 
 # Index for: Client + Date Sort (Admin View)
 gcloud firestore indexes composite create --project=surfn-peru --database=expenses --collection-group=expenses --field-config=field-path=cliente,order=ascending --field-config=field-path=fecha,order=descending
+
+# This updates the build triggers
+gcloud alpha builds triggers import --source=trigger.yaml --region=global
