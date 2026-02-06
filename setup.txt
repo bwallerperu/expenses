@@ -28,8 +28,29 @@ gcloud builds submit --tag gcr.io/surfn-peru/expenses-app --project=surfn-peru
 
 ### Option C: Automated Build Trigger (CD)
 # Automatically builds and deploys when you push a tag like 'v1.0.99' to GitHub.
-# 1. Ensure your GitHub repo is connected to the project in Cloud Build console.
-# 2. Run this command to create the trigger:
+
+#### Step 1: Connect GitHub to GCP (One-time)
+# 1. Open Google Cloud Console: https://console.cloud.google.com/cloud-build/triggers
+# 2. Click "Manage Repositories" -> "Connect Repository".
+# 3. Select "GitHub (Cloud Build GitHub App 1st gen)" and click "Continue".
+# 4. Authorize Google Cloud Build to access your GitHub account.
+# 5. Select 'bwallerperu/expenses' from the list and click "Connect".
+
+#### Step 2: Grant Cloud Build Permissions
+# The Cloud Build service account needs permission to deploy to Cloud Run.
+# Run these commands in your local terminal or Cloud Shell:
+
+PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
+CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+
+# Grant "Cloud Run Admin" role
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin"
+
+# Grant "Service Account User" role
+gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser"
+
+#### Step 3: Create the Trigger
+# Run this command to link the GitHub tag '.99' to the 'cloudbuild.yaml' file:
 
 gcloud beta builds triggers create github \
     --name="deploy-on-tag-99" \
@@ -39,29 +60,9 @@ gcloud beta builds triggers create github \
     --build-config="cloudbuild.yaml" \
     --project=surfn-peru
 
-# Note: The trigger will use the new 'cloudbuild.yaml' file to handle the build and deployment.
+# Note: The trigger will use the 'cloudbuild.yaml' file in your repo to run the deploy.
 
-## 4. CD Prerequisites (Authorization & Permissions)
-
-### A. Connect GitHub to GCP (One-time)
-# 1. Go to: https://console.cloud.google.com/cloud-build/triggers
-# 2. Click "Manage Repositories" -> "Connect Repository".
-# 3. Select "GitHub (Cloud Build GitHub App)" and authorize the 'bwallerperu/expenses' repo.
-
-### B. Grant Cloud Build Permissions (Cloud Shell/Terminal)
-# The Cloud Build service account needs permission to deploy to Cloud Run.
-# Run these commands REPLACE with your project number if needed, but this shortcut works:
-
-PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
-CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
-
-# Grant Cloud Run Admin
-gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin"
-
-# Grant Service Account User
-gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser"
-
-## 5. Firestore Composite Indexes
+## 4. Firestore Composite Indexes
 # Run these to enable advanced filtering and sorting (takes a few minutes to build)
 
 # Index for: User + Date Sort
