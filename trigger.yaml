@@ -19,7 +19,7 @@ github:
   push:
     # Matches any tag that ends with [deploy]
     # Example matches: v1.0[deploy], release-abc[deploy]
-    tag: '.*\[deploy\]$'
+    tag: '.*\-deploy$'
 
 # 1. Tag your current commit
 # git tag v1.2[deploy]
