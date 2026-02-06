@@ -38,31 +38,49 @@
                         </path>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800">Acceso Ejecutivo</h1>
-                <p class="text-slate-500 text-sm">Ingrese sus credenciales para reportar</p>
+                <h1 id="authTitle" class="text-2xl font-bold text-slate-800">Acceso Ejecutivo</h1>
+                <p id="authSubtitle" class="text-slate-500 text-sm">Ingrese sus credenciales para reportar</p>
             </div>
 
             <form id="loginForm" class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Usuario (Ejecutivo)</label>
-                    <select id="loginUser" required
+
+                    <!-- Login Mode: Dropdown -->
+                    <select id="loginUserSelect" required
                         class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <option value="" disabled selected>Seleccione su nombre...</option>
+                        <option value="" disabled selected>Cargando usuarios...</option>
                     </select>
+
+                    <!-- Register Mode: Input -->
+                    <input type="text" id="loginUserInput" placeholder="Nombre de usuario" disabled
+                        class="hidden w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
                     <input type="password" id="loginPass" required placeholder="••••••••"
                         class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    <p class="text-[10px] text-slate-400 mt-1 italic">* Use '123456' para demostración</p>
                 </div>
-                <button type="submit"
+                <div id="confirmPassDiv" class="hidden">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar Contraseña</label>
+                    <input type="password" id="confirmLoginPass" placeholder="••••••••"
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                <button type="submit" id="loginSubmitBtn"
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-blue-100">
                     Iniciar Sesión
                 </button>
             </form>
+
+            <div class="mt-4 text-center">
+                <button onclick="toggleLoginMode()" id="toggleAuthBtn"
+                    class="text-sm text-blue-600 font-semibold hover:underline">
+                    ¿Nuevo usuario? Regístrese aquí
+                </button>
+            </div>
+
             <div id="loginError" class="mt-4 text-red-500 text-sm text-center font-medium hidden">
-                Contraseña incorrecta. Intente de nuevo.
+                Error de autenticación.
             </div>
         </div>
     </div>
@@ -271,10 +289,7 @@
             "Gasto-Rep-Comida", "Gasto-Rep-Otros", "Servicios-Misc", "Viajes-Misc"
         ];
 
-        const ejecutivosDB = {
-            "Ignacio Espinosa": "123456", "Jose Espinosa": "123456", "Guillermo Bertozi": "123456",
-            "Gerente-1": "123456", "Gerente-2": "123456", "Gerente-3": "123456", "Gerente-4": "123456", "Gerente-5": "123456"
-        };
+        // REMOVED: ejecutivosDB (Authentication is now server-side)
 
         const clientes = [
             "Delosi", "Cliente-1", "Cliente-2", "Cliente-3", "Cliente-4",
@@ -283,16 +298,16 @@
         ];
 
         let currentUser = null;
+        let isRegisterMode = false;
 
         // INICIALIZACIÓN
         window.onload = () => {
-            const loginUserSelect = document.getElementById('loginUser');
             const categoriaSelect = document.getElementById('categoria');
             const clienteSelect = document.getElementById('cliente');
             const filterCategory = document.getElementById('filterCategory');
             const filterClient = document.getElementById('filterClient');
 
-            Object.keys(ejecutivosDB).sort().forEach(e => loginUserSelect.add(new Option(e, e)));
+            loadUsers(); // Load users for login dropdown
 
             categorias.sort().forEach(c => {
                 categoriaSelect.add(new Option(c, c));
@@ -308,6 +323,25 @@
             document.getElementById('searchInput').addEventListener('input', debounce(fetchExpenses, 500));
         };
 
+        async function loadUsers() {
+            const select = document.getElementById('loginUserSelect');
+            try {
+                const response = await fetch('/api/users');
+                if (response.ok) {
+                    const users = await response.json();
+                    select.innerHTML = '<option value="" disabled selected>Seleccione su nombre...</option>';
+                    users.sort().forEach(user => {
+                        select.add(new Option(user, user));
+                    });
+                } else {
+                    select.innerHTML = '<option value="" disabled selected>Error al cargar usuarios</option>';
+                }
+            } catch (e) {
+                console.error("Error loading users", e);
+                select.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
+            }
+        }
+
         // UI HELPERS
         function toggleFilters() {
             const panel = document.getElementById('filterPanel');
@@ -322,22 +356,140 @@
             fetchExpenses();
         }
 
-        // LÓGICA DE LOGIN
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        function toggleLoginMode() {
+            isRegisterMode = !isRegisterMode;
+            const title = document.getElementById('authTitle');
+            const subTitle = document.getElementById('authSubtitle');
+            const confirmPassDiv = document.getElementById('confirmPassDiv');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            const toggleBtn = document.getElementById('toggleAuthBtn');
+            const loginPass = document.getElementById('loginPass');
+            const confirmPass = document.getElementById('confirmLoginPass');
+
+            const userSelect = document.getElementById('loginUserSelect');
+            const userInput = document.getElementById('loginUserInput');
+
+            if (isRegisterMode) {
+                // SWITCH TO REGISTER (Input Mode)
+                title.innerText = "Registrar Nuevo Usuario";
+                subTitle.innerText = "Cree una cuenta para empezar a reportar";
+
+                confirmPassDiv.classList.remove('hidden');
+                confirmPass.required = true;
+
+                userSelect.classList.add('hidden');
+                userSelect.required = false;
+                userSelect.disabled = true;
+
+                userInput.classList.remove('hidden');
+                userInput.required = true;
+                userInput.disabled = false;
+                userInput.focus();
+
+                submitBtn.innerText = "Registrarse";
+                toggleBtn.innerText = "¿Ya tiene cuenta? Inicie Sesión";
+                loginPass.placeholder = "Contraseña nueva";
+            } else {
+                // SWITCH TO LOGIN (Dropdown Mode)
+                title.innerText = "Acceso Ejecutivo";
+                subTitle.innerText = "Ingrese sus credenciales para reportar";
+
+                confirmPassDiv.classList.add('hidden');
+                confirmPass.required = false;
+                confirmPass.value = '';
+
+                userSelect.classList.remove('hidden');
+                userSelect.required = true;
+                userSelect.disabled = false;
+
+                userInput.classList.add('hidden');
+                userInput.required = false;
+                userInput.disabled = true;
+
+                submitBtn.innerText = "Iniciar Sesión";
+                toggleBtn.innerText = "¿Nuevo usuario? Regístrese aquí";
+                loginPass.placeholder = "••••••••";
+
+                // Refresh user list on switching back to login
+                loadUsers();
+            }
+        }
+
+        // LÓGICA DE AUTH (LOGIN / REGISTER)
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const user = document.getElementById('loginUser').value;
+
+            // Get user from the active field
+            let user;
+            if (isRegisterMode) {
+                user = document.getElementById('loginUserInput').value;
+            } else {
+                user = document.getElementById('loginUserSelect').value;
+            }
+
             const pass = document.getElementById('loginPass').value;
             const errorMsg = document.getElementById('loginError');
 
-            if (ejecutivosDB[user] === pass) {
-                currentUser = user;
-                showDashboard();
-                fetchExpenses();
+            errorMsg.classList.add('hidden');
+
+            if (isRegisterMode) {
+                const confirmPass = document.getElementById('confirmLoginPass').value;
+                if (pass !== confirmPass) {
+                    showAuthError("Las contraseñas no coinciden");
+                    return;
+                }
+                await registerUser(user, pass);
             } else {
-                errorMsg.classList.remove('hidden');
-                setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+                await loginUser(user, pass);
             }
         });
+
+        function showAuthError(msg) {
+            const errorMsg = document.getElementById('loginError');
+            errorMsg.innerText = msg;
+            errorMsg.classList.remove('hidden');
+        }
+
+        async function registerUser(username, password) {
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Usuario registrado con éxito. Ahora puede iniciar sesión.");
+                    toggleLoginMode(); // Switch back to login
+                } else {
+                    showAuthError(data.message || "Error al registrar");
+                }
+            } catch (error) {
+                showAuthError("Error de conexión");
+            }
+        }
+
+        async function loginUser(username, password) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentUser = data.username;
+                    showDashboard();
+                    fetchExpenses();
+                } else {
+                    showAuthError(data.message || "Credenciales inválidas");
+                }
+            } catch (error) {
+                showAuthError("Error de conexión");
+            }
+        }
 
         function showDashboard() {
             document.getElementById('loginView').classList.add('hidden');

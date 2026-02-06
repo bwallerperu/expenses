@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, jsonify
 from google.cloud import firestore
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -12,14 +13,79 @@ DATABASE_ID = "expenses"
 # Inicializar cliente de Firestore
 db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)
 collection_name = "expenses"
+users_collection = "users"
 
 def is_admin(user_id):
     """Determina si un usuario es administrador."""
+    # TODO: In the future, check role in DB
     return user_id and user_id.startswith("Gerente-")
 
 @app.route('/')
 def index():
     return render_template('recibos.html')
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({"status": "error", "message": "Faltan datos"}), 400
+
+        # Check if user exists
+        user_ref = db.collection(users_collection).document(username)
+        if user_ref.get().exists:
+            return jsonify({"status": "error", "message": "El usuario ya existe"}), 409
+
+        # Create user
+        hashed_password = generate_password_hash(password)
+        user_data = {
+            "username": username,
+            "password": hashed_password,
+            "role": "user", # Default role
+            "created_at": firestore.SERVER_TIMESTAMP
+        }
+        user_ref.set(user_data)
+        
+        return jsonify({"status": "success", "username": username}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({"status": "error", "message": "Faltan datos"}), 400
+
+        user_ref = db.collection(users_collection).document(username)
+        doc = user_ref.get()
+
+        if not doc.exists:
+             return jsonify({"status": "error", "message": "Usuario no encontrado"}), 404
+        
+        user_data = doc.to_dict()
+        if check_password_hash(user_data.get('password'), password):
+            return jsonify({"status": "success", "username": username, "role": user_data.get('role', 'user')}), 200
+        else:
+            return jsonify({"status": "error", "message": "Contraseña incorrecta"}), 401
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        users = db.collection(users_collection).stream()
+        user_list = [doc.id for doc in users]
+        return jsonify(user_list), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/expenses', methods=['POST'])
 def add_expense():
