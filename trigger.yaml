@@ -11,3 +11,4 @@ resourceName: projects/surfn-peru/locations/global/triggers/498aeaf0-1ed1-4ff2-a
 filter: _COMMIT_MESSAGE.matches(".*\\[deploy\\].*")
 substitutions:
   _COMMIT_MESSAGE: $(commit.message)
+  
