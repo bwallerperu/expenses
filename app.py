@@ -7,6 +7,7 @@ app = Flask(__name__)
 # Configuración de Firestore
 PROJECT_ID = "surfn-peru"
 DATABASE_ID = "expenses"
+# Joey
 
 # Inicializar cliente de Firestore
 db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)

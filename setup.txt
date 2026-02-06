@@ -59,15 +59,24 @@ gcloud iam service-accounts create expenses-runner \
     --display-name="Expenses App Runner" \
     --project=surfn-peru
 
+# Allow Cloud Build to act as this service account
 gcloud iam service-accounts add-iam-policy-binding \
     expenses-runner@surfn-peru.iam.gserviceaccount.com \
     --member="serviceAccount:1087744597190@cloudbuild.gserviceaccount.com" \
     --role="roles/iam.serviceAccountUser" \
     --project=surfn-peru
-    
+
+# Grant Cloud Run Admin to Cloud Build
 gcloud projects add-iam-policy-binding surfn-peru \
     --member="serviceAccount:1087744597190@cloudbuild.gserviceaccount.com" \
     --role="roles/run.admin" \
+    --condition=None
+
+# !!! CRITICAL: Grant Firestore permissions to the Runner service account !!!
+gcloud projects add-iam-policy-binding surfn-peru \
+    --member="serviceAccount:expenses-runner@surfn-peru.iam.gserviceaccount.com" \
+    --role="roles/datastore.user" \\
+    --condition=None \
     --project=surfn-peru
 
 # 4. Trigger Deployment (Terminal)
