@@ -48,22 +48,24 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA']
 
-  # 3. Conditional Deploy to Cloud Run
+# 3. Conditional Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        if [[ "$(git log -1 --pretty=%B)" == *"[deploy]"* ]]; then
-          echo "Deployment keyword [deploy] found! Proceeding with Cloud Run deployment..."
+        # Fetch tags pointing at the current commit
+        CURRENT_TAG=$(git tag --points-at HEAD)
+        
+        if [[ "$CURRENT_TAG" == *"-deploy" ]]; then
+          echo "Found tag ending in -deploy ($CURRENT_TAG). Proceeding with deployment..."
           gcloud run deploy expenses-app \
             --image gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA \
             --region us-central1 \
             --allow-unauthenticated \
             --service-account expenses-runner@surfn-peru.iam.gserviceaccount.com
         else
-          echo "No [deploy] found in commit message. Skipping deployment."
+          echo "No tag ending in -deploy found (Current tag: '$CURRENT_TAG'). Skipping deployment."
         fi
-
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
