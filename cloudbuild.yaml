@@ -1,13 +1,20 @@
 steps:
   # 1. Build the container image using the short SHA
+  # Added --provenance=false to prevent the "empty manifest" error
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA', '.']
+    args: 
+      - 'build'
+      - '--platform=linux/amd64'
+      - '--provenance=false'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
+      - '.'
 
-  # 2. Push the image to Container Registry
+  # 2. Push the image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA']
 
-  # 3. Deploy to Cloud Run (Always runs)
+  # 3. Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
       - 'run'
@@ -20,3 +27,5 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
+
+  
