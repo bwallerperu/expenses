@@ -15,6 +15,7 @@ db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)
 collection_name = "expenses"
 users_collection = "users"
 categories_collection = "categories"
+clients_collection = "clients"
 
 def initialize_categories():
     """Inicializa la colección de categorías si está vacía."""
@@ -35,8 +36,29 @@ def initialize_categories():
     except Exception as e:
         print(f"Error inicializando categorías: {e}")
 
+def initialize_clients():
+    """Inicializa la colección de clientes si está vacía."""
+    try:
+        docs = db.collection(clients_collection).limit(1).stream()
+        if not any(docs):
+            print("Inicializando clientes en Firestore...")
+            initial_clients = [
+                "Delosi", "Cliente-1", "Cliente-2", "Cliente-3", "Cliente-4",
+                "Cliente-5", "Cliente-6", "Cliente-7", "Cliente-8", "Cliente-9",
+                "Cliente-10", "Cliente-11", "Cliente-12", "Cliente-13", "Cliente-14", "Cliente-15"
+            ]
+            batch = db.batch()
+            for client in initial_clients:
+                doc_ref = db.collection(clients_collection).document(client)
+                batch.set(doc_ref, {"name": client})
+            batch.commit()
+            print("Clientes inicializados.")
+    except Exception as e:
+        print(f"Error inicializando clientes: {e}")
+
 # Initialize categories on startup
 initialize_categories()
+initialize_clients()
 
 def is_admin(user_id):
     """Determina si un usuario es administrador."""
@@ -118,6 +140,17 @@ def get_categories():
         # Filter out None values just in case
         category_list = [c for c in category_list if c]
         return jsonify(sorted(category_list)), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/clients', methods=['GET'])
+def get_clients():
+    try:
+        clients = db.collection(clients_collection).stream()
+        client_list = [doc.to_dict().get('name') for doc in clients]
+        # Filter out None values just in case
+        client_list = [c for c in client_list if c]
+        return jsonify(sorted(client_list)), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

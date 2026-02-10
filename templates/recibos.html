@@ -288,11 +288,7 @@
 
         // REMOVED: ejecutivosDB (Authentication is now server-side)
 
-        const clientes = [
-            "Delosi", "Cliente-1", "Cliente-2", "Cliente-3", "Cliente-4",
-            "Cliente-5", "Cliente-6", "Cliente-7", "Cliente-8", "Cliente-9",
-            "Cliente-10", "Cliente-11", "Cliente-12", "Cliente-13", "Cliente-14", "Cliente-15"
-        ];
+        // REMOVED: clientes (Now fetched from server)
 
         let currentUser = null;
         let isRegisterMode = false;
@@ -304,11 +300,7 @@
 
             loadUsers(); // Load users for login dropdown
             loadCategories(); // Load categories dynamically
-
-            clientes.sort().forEach(cl => {
-                clienteSelect.add(new Option(cl, cl));
-                filterClient.add(new Option(cl, cl));
-            });
+            loadClients(); // Load clients dynamically
 
             // Event listener para búsqueda rápida
             document.getElementById('searchInput').addEventListener('input', debounce(fetchExpenses, 500));
@@ -338,6 +330,33 @@
             } catch (e) {
                 console.error("Error fetching categories", e);
                 showToast("Error de conexión al cargar categorías");
+            }
+        }
+
+        async function loadClients() {
+            const clienteSelect = document.getElementById('cliente');
+            const filterClient = document.getElementById('filterClient');
+
+            try {
+                const response = await fetch('/api/clients');
+                if (response.ok) {
+                    const clients = await response.json();
+
+                    // Clear existing options (except default)
+                    clienteSelect.innerHTML = '<option value="" disabled selected>Seleccione cliente...</option>';
+                    filterClient.innerHTML = '<option value="">Todos</option>';
+
+                    clients.forEach(c => {
+                        clienteSelect.add(new Option(c, c));
+                        filterClient.add(new Option(c, c));
+                    });
+                } else {
+                    console.error("Error loading clients");
+                    showToast("Error al cargar clientes");
+                }
+            } catch (e) {
+                console.error("Error fetching clients", e);
+                showToast("Error de conexión al cargar clientes");
             }
         }
 
