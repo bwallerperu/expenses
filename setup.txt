@@ -61,6 +61,7 @@ CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
 gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/run.admin" --condition=None
 gcloud projects add-iam-policy-binding surfn-peru --member="serviceAccount:${CB_SA}" --role="roles/iam.serviceAccountUser" --condition=None
 
+
 # 3. Create the Trigger (Terminal)
 # This trigger fires on every push to 'main', but only deploys if '[deploy]' is in the commit message.
 gcloud beta builds triggers create github \
