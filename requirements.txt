@@ -3,3 +3,9 @@ google-cloud-firestore
 google-cloud-bigquery
 gunicorn
 Werkzeug
+google-generativeai
+google-cloud-aiplatform
+opencv-python-headless
+Pillow
+numpy
+vertexai
