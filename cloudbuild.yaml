@@ -2,7 +2,7 @@ steps:
   # 1. Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     env:
-      - 'DOCKER_BUILDKIT=0' # Disables BuildKit to ensure legacy V2 manifest compatibility
+      - 'DOCKER_BUILDKIT=0' 
     args: 
       - 'build'
       - '-t'
@@ -23,6 +23,7 @@ steps:
       - '--region=us-central1'
       - '--allow-unauthenticated'
       - '--service-account=expenses-runner@surfn-peru.iam.gserviceaccount.com'
+      - '--verbosity=debug'
 
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
