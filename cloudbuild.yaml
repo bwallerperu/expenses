@@ -13,8 +13,9 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA']
 
-  # 3. Deploy to Cloud Run
+  # 3. Deploy to Cloud Run (Fixed Entrypoint)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud' # <--- THIS IS THE KEY FIX
     args:
       - 'run'
       - 'deploy'
@@ -23,7 +24,7 @@ steps:
       - '--region=us-central1'
       - '--allow-unauthenticated'
       - '--service-account=expenses-runner@surfn-peru.iam.gserviceaccount.com'
-      - '--verbosity=debug'
+      - '--quiet'
 
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
