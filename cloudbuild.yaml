@@ -15,7 +15,7 @@ steps:
 
   # 3. Deploy to Cloud Run (Fixed Entrypoint)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud' # <--- THIS IS THE KEY FIX
+    entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
