@@ -1,0 +1,17 @@
+[2026-02-05T18:35:30-05:00] [main] PROMPT: build me the requirements.txt necessary for all the packages this app uses
+[2026-02-05T18:36:34-05:00] [main] PROMPT: remove items that are not top level pakages directly referenced but are instead ones that are lower level building blocks the other packages depend on
+[2026-02-05T18:43:09-05:00] [main] PROMPT: change the button color scheme from green to blue
+[2026-02-05T18:46:21-05:00] [main] PROMPT: add a button that filters the grid view on the right to enable search by any of the key fields: date, category, client. also the grid view should only ever show records for the registered user, except for users that are designated as administrators
+[2026-02-05T18:50:57-05:00] [main] PROMPT: when I tried to search by a particular category it gave me an error and said look at the console but I don't see anything
+[2026-02-05T18:52:48-05:00] [main] PROMPT: create the gcloud commands necessary to create indexes on date, client, category and user. if necessary make compound indexes so we can search by user first and then the other element
+[2026-02-05T19:01:26-05:00] [main] PROMPT: show the terminal and gcloud commands necessary to build the docker container and push it as a cloud run app
+[2026-02-05T19:02:59-05:00] [main] PROMPT: can you modify option a so that when I push a version to github with a label that ends with .99 it will automatically push it with a build trigger
+[2026-02-05T19:05:01-05:00] [main] PROMPT: do I need to configure anything on the github side to give it authorization or credentials or anything
+[2026-02-05T19:06:28-05:00] [main] PROMPT: should I use 1st or 2nd gen on the Manage Repositories screen
+[2026-02-05T19:37:30-05:00] [main] PROMPT: for option c add the necessary steps in github console to connect the project and authorize to run the build trigger
+[2026-02-05T19:39:11-05:00] [main] PROMPT: don't I need to something on the github side
+[2026-02-05T19:40:59-05:00] [main] PROMPT: update setup.txt to show gcloud commands whenever possible instead of GUIsteps through cloud console
+[2026-02-05T19:59:52-05:00] [main] PROMPT: for the trigger instead of triggering on a tag can I trigger on a comment that I add with git commit -am ""
+[2026-02-05T20:16:45-05:00] [main] PROMPT: that deployed successfully to cloud run, but it does not save or retrieve the data. do I need to configure a service account or api to add the app running in cloud run to make that work
+[2026-02-05T20:19:24-05:00] [main] PROMPT: gcloud projects add-iam-policy-binding surfn-peru \ --member="serviceAccount:expenses-runner@surfn-peru.iam.gserviceaccount.com" \ --role="roles/datastore.user" \ --condition=None \ --project=surfn-peru I still get no data, can I check the logs somewhere to see more info
+[2026-02-05T20:21:39-05:00] [main] PROMPT: Read our entire conversation history from this session and append all of my prompts into the file PROMPT_HISTORY.log. Format each one with a timestamp if possible.
