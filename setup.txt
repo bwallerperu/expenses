@@ -125,3 +125,18 @@ gcloud firestore indexes composite create --project=surfn-peru --database=expens
 # This updates the build triggers
 gcloud alpha builds triggers import --source=trigger.yaml --region=global
 
+
+
+
+PROJECT_NUMBER=$(gcloud projects describe surfn-peru --format='get(projectNumber)')
+
+# 1. Give Cloud Build permission to manage Cloud Run
+gcloud projects add-iam-policy-binding surfn-peru \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/run.admin" --condition=None
+
+# 2. Give Cloud Build permission to "ActAs" your runner account
+gcloud iam service-accounts add-iam-policy-binding expenses-runner@surfn-peru.iam.gserviceaccount.com \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser" --condition=None
+
