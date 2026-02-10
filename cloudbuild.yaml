@@ -68,5 +68,6 @@ steps:
           echo "No tag ending in -deploy found (Current tag: '$$CURRENT_TAG'). Skipping deployment."
         fi
         
+
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
