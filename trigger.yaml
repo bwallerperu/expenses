@@ -1,14 +1,3 @@
-# createTime: '2026-02-06T01:09:32.234458283Z'
-# filename: cloudbuild.yaml
-# github:
-#   name: expenses
-#   owner: bwallerperu
-#   push:
-#     branch: ^main$
-# id: 498aeaf0-1ed1-4ff2-a537-0c48deb615b1
-# name: deploy-on-commit-msg
-# resourceName: projects/surfn-peru/locations/global/triggers/498aeaf0-1ed1-4ff2-a537-0c48deb615b1
-
 id: 498aeaf0-1ed1-4ff2-a537-0c48deb615b1
 name: deploy-on-tag-suffix
 resourceName: projects/surfn-peru/locations/global/triggers/498aeaf0-1ed1-4ff2-a537-0c48deb615b1
@@ -21,9 +10,9 @@ github:
     # Example matches: v1.0[deploy], release-abc[deploy]
     tag: '.*\-deploy$'
 
-# 1. Tag your current commit
-# git tag v1.2[deploy]
-# git push origin v1.2[deploy]
-
-# Do this once in your terminal
+# Do this once in your terminal to setup a git alias
 # git config --global alias.deploy '!git tag "$(git log -1 --pretty=%B | head -n 1 | tr " " "-")-deploy" && git push origin --tags'
+# Then use:
+# git commit -am "x.x.x" 
+# git push
+# git deploy

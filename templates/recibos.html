@@ -284,10 +284,7 @@
 
     <script>
         // CONFIGURACIÓN DE DATOS
-        const categorias = [
-            "Auto-Gasolina", "Auto-Estacionamiento", "Auto-Otros",
-            "Gasto-Rep-Comida", "Gasto-Rep-Otros", "Servicios-Misc", "Viajes-Misc"
-        ];
+        // REMOVED: categorias (Now fetched from server)
 
         // REMOVED: ejecutivosDB (Authentication is now server-side)
 
@@ -302,17 +299,11 @@
 
         // INICIALIZACIÓN
         window.onload = () => {
-            const categoriaSelect = document.getElementById('categoria');
             const clienteSelect = document.getElementById('cliente');
-            const filterCategory = document.getElementById('filterCategory');
             const filterClient = document.getElementById('filterClient');
 
             loadUsers(); // Load users for login dropdown
-
-            categorias.sort().forEach(c => {
-                categoriaSelect.add(new Option(c, c));
-                filterCategory.add(new Option(c, c));
-            });
+            loadCategories(); // Load categories dynamically
 
             clientes.sort().forEach(cl => {
                 clienteSelect.add(new Option(cl, cl));
@@ -322,6 +313,33 @@
             // Event listener para búsqueda rápida
             document.getElementById('searchInput').addEventListener('input', debounce(fetchExpenses, 500));
         };
+
+        async function loadCategories() {
+            const categoriaSelect = document.getElementById('categoria');
+            const filterCategory = document.getElementById('filterCategory');
+
+            try {
+                const response = await fetch('/api/categories');
+                if (response.ok) {
+                    const categories = await response.json();
+
+                    // Clear existing options (except default)
+                    categoriaSelect.innerHTML = '<option value="" disabled selected>Seleccione categoría...</option>';
+                    filterCategory.innerHTML = '<option value="">Todas</option>';
+
+                    categories.forEach(c => {
+                        categoriaSelect.add(new Option(c, c));
+                        filterCategory.add(new Option(c, c));
+                    });
+                } else {
+                    console.error("Error loading categories");
+                    showToast("Error al cargar categorías");
+                }
+            } catch (e) {
+                console.error("Error fetching categories", e);
+                showToast("Error de conexión al cargar categorías");
+            }
+        }
 
         async function loadUsers() {
             const select = document.getElementById('loginUserSelect');
