@@ -1,44 +1,3 @@
-# steps:
-#   # Step 0: Gatekeeper
-#   # - name: 'bash'
-#   #   script: |
-#   #     if [[ "${_DEPLOY_CHECK}" == *"[deploy]"* ]]; then
-#   #       echo "Found [deploy] tag. Proceeding..."
-#   #     else
-#   #       echo "No [deploy] tag found. Skipping build."
-#   #       exit 1 # Use exit 1 if you want the build to show as 'Failed'
-#   #     fi
-#   # 1. Build the container image
-#   # We always build to ensure the code is valid/testable
-#   - name: 'gcr.io/cloud-builders/docker'
-#     args: ['build', '-t', 'gcr.io/$PROJECT_ID/expenses-app:latest', '.']
-
-#   # 2. Push the image to Container Registry
-#   - name: 'gcr.io/cloud-builders/docker'
-#     args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:latest']
-
-#   # 3. Conditional Deploy to Cloud Run
-#   # This step only runs the 'gcloud run deploy' if the commit message contains '[deploy]'
-#   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-#     entrypoint: 'bash'
-#     args:
-#       - '-c'
-#       - |
-#         if [[ "$(git log -1 --pretty=%B)" == *"[deploy]"* ]]; then
-#           echo "Deployment keyword [deploy] found! Proceeding with Cloud Run deployment..."
-#           gcloud run deploy expenses-app \
-#             --image gcr.io/$PROJECT_ID/expenses-app:latest \
-#             --region us-central1 \
-#             --allow-unauthenticated \
-#             --service-account expenses-runner@surfn-peru.iam.gserviceaccount.com
-#         else
-#           echo "No [deploy] found in commit message. Skipping deployment."
-#           echo "Full commit message: $(git log -1 --pretty=%B)"
-#         fi
-
-# images:
-#   - 'gcr.io/$PROJECT_ID/expenses-app:latest'
-
 steps:
   # 1. Build the container image using the short SHA
   - name: 'gcr.io/cloud-builders/docker'
@@ -48,26 +7,16 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA']
 
-# 3. Conditional Deploy to Cloud Run
+  # 3. Deploy to Cloud Run (Always runs)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
     args:
-      - '-c'
-      - |
-        # Use $$ for Bash variables to avoid Cloud Build substitution errors
-        CURRENT_TAG=$(git tag --points-at HEAD)
-        
-        if [[ "$$CURRENT_TAG" == *"-deploy" ]]; then
-          echo "Found tag ending in -deploy ($$CURRENT_TAG). Proceeding with deployment..."
-          gcloud run deploy expenses-app \
-            --image gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA \
-            --region us-central1 \
-            --allow-unauthenticated \
-            --service-account expenses-runner@surfn-peru.iam.gserviceaccount.com
-        else
-          echo "No tag ending in -deploy found (Current tag: '$$CURRENT_TAG'). Skipping deployment."
-        fi
-        
+      - 'run'
+      - 'deploy'
+      - 'expenses-app'
+      - '--image=gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
+      - '--region=us-central1'
+      - '--allow-unauthenticated'
+      - '--service-account=expenses-runner@surfn-peru.iam.gserviceaccount.com'
 
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
