@@ -2,6 +2,9 @@
 # Do this once in your terminal to setup a git alias
 # git config --global alias.deploy '!git tag "$(git log -1 --pretty=%B | head -n 1 | tr " " "-")-deploy" && git push origin --tags'
 # or in windows edit the .gitconfig file
+
+git config --global --edit
+
 deploy = "!f() { \
     tag_name=$(git log -1 --pretty=%B | head -n 1 | tr ' ' '-')-deploy; \
     git tag \"$tag_name\" && git push origin --tags; \
