@@ -1,11 +1,10 @@
 steps:
-  # 1. Build the container image using the short SHA
-  # Added --provenance=false to prevent the "empty manifest" error
+  # 1. Build the container image
   - name: 'gcr.io/cloud-builders/docker'
+    env:
+      - 'DOCKER_BUILDKIT=0' # Disables BuildKit to ensure legacy V2 manifest compatibility
     args: 
       - 'build'
-      - '--platform=linux/amd64'
-      - '--provenance=false'
       - '-t'
       - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
       - '.'
@@ -27,5 +26,3 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
-
-  
