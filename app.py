@@ -14,6 +14,29 @@ DATABASE_ID = "expenses"
 db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)
 collection_name = "expenses"
 users_collection = "users"
+categories_collection = "categories"
+
+def initialize_categories():
+    """Inicializa la colección de categorías si está vacía."""
+    try:
+        docs = db.collection(categories_collection).limit(1).stream()
+        if not any(docs):
+            print("Inicializando categorías en Firestore...")
+            initial_categories = [
+                "Auto-Gasolina", "Auto-Estacionamiento", "Auto-Otros",
+                "Gasto-Rep-Comida", "Gasto-Rep-Otros", "Servicios-Misc", "Viajes-Misc"
+            ]
+            batch = db.batch()
+            for cat in initial_categories:
+                doc_ref = db.collection(categories_collection).document(cat)
+                batch.set(doc_ref, {"name": cat})
+            batch.commit()
+            print("Categorías inicializadas.")
+    except Exception as e:
+        print(f"Error inicializando categorías: {e}")
+
+# Initialize categories on startup
+initialize_categories()
 
 def is_admin(user_id):
     """Determina si un usuario es administrador."""
@@ -84,6 +107,17 @@ def get_users():
         users = db.collection(users_collection).stream()
         user_list = [doc.id for doc in users]
         return jsonify(user_list), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    try:
+        categories = db.collection(categories_collection).stream()
+        category_list = [doc.to_dict().get('name') for doc in categories]
+        # Filter out None values just in case
+        category_list = [c for c in category_list if c]
+        return jsonify(sorted(category_list)), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
