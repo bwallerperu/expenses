@@ -50,7 +50,7 @@ def initialize_clients():
             batch = db.batch()
             for client in initial_clients:
                 doc_ref = db.collection(clients_collection).document(client)
-                batch.set(doc_ref, {"name": client})
+                batch.set(doc_ref, {"company_name": client})
             batch.commit()
             print("Clientes inicializados.")
     except Exception as e:
@@ -147,9 +147,13 @@ def get_categories():
 def get_clients():
     try:
         clients = db.collection(clients_collection).stream()
-        client_list = [doc.to_dict().get('name') for doc in clients]
-        # Filter out None values just in case
-        client_list = [c for c in client_list if c]
+        # Support both 'name' (legacy/default) and 'company_name' (imported data)
+        client_list = []
+        for doc in clients:
+            data = doc.to_dict()
+            name = data.get('company_name') or data.get('name')
+            if name:
+                client_list.append(name)
         return jsonify(sorted(client_list)), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
