@@ -57,13 +57,38 @@ def initialize_clients():
         print(f"Error inicializando clientes: {e}")
 
 # Initialize categories on startup
+# Initialize categories on startup
 initialize_categories()
 initialize_clients()
+
+def initialize_admin_user():
+    """Crea un usuario administrador por defecto si no existe."""
+    try:
+        admin_ref = db.collection(users_collection).document("admin")
+        if not admin_ref.get().exists:
+            print("Creando usuario admin por defecto...")
+            hashed_password = generate_password_hash("admin123")
+            admin_data = {
+                "username": "admin",
+                "password": hashed_password,
+                "role": "admin",
+                "created_at": firestore.SERVER_TIMESTAMP
+            }
+            admin_ref.set(admin_data)
+            print("Usuario admin creado.")
+    except Exception as e:
+        print(f"Error inicializando admin: {e}")
+
+initialize_admin_user()
 
 def is_admin(user_id):
     """Determina si un usuario es administrador."""
     # TODO: In the future, check role in DB
-    return user_id and user_id.startswith("Gerente-")
+    return user_id and (user_id.startswith("Gerente-") or user_id == "admin")
+
+@app.route('/admin')
+def admin_dashboard():
+    return render_template('admin.html')
 
 @app.route('/')
 def index():
@@ -132,6 +157,28 @@ def get_users():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    try:
+        db.collection(users_collection).document(user_id).delete()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/users/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        data = request.json
+        password = data.get('password')
+        if not password:
+            return jsonify({"status": "error", "message": "Password required"}), 400
+            
+        hashed_password = generate_password_hash(password)
+        db.collection(users_collection).document(user_id).update({"password": hashed_password})
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     try:
@@ -140,6 +187,40 @@ def get_categories():
         # Filter out None values just in case
         category_list = [c for c in category_list if c]
         return jsonify(sorted(category_list)), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/categories', methods=['POST'])
+def add_category():
+    try:
+        data = request.json
+        name = data.get('name')
+        if not name:
+            return jsonify({"status": "error", "message": "Nombre requerido"}), 400
+        
+        db.collection(categories_collection).document(name).set({"name": name})
+        return jsonify({"status": "success"}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/categories/<category_id>', methods=['DELETE'])
+def delete_category(category_id):
+    try:
+        db.collection(categories_collection).document(category_id).delete()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/categories/<category_id>', methods=['PUT'])
+def update_category(category_id):
+    try:
+        data = request.json
+        name = data.get('name')
+        if not name:
+            return jsonify({"status": "error", "message": "Name required"}), 400
+            
+        db.collection(categories_collection).document(category_id).update({"name": name})
+        return jsonify({"status": "success"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -157,6 +238,51 @@ def get_clients():
         return jsonify(sorted(client_list)), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/clients', methods=['POST'])
+def add_client():
+    try:
+        data = request.json
+        name = data.get('name') # Frontend should send 'name'
+        if not name:
+            return jsonify({"status": "error", "message": "Nombre requerido"}), 400
+        
+        # Use name as doc ID for simplicity, matching initialize_clients
+        db.collection(clients_collection).document(name).set({"company_name": name})
+        return jsonify({"status": "success"}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/clients/<client_id>', methods=['DELETE'])
+def delete_client(client_id):
+    try:
+        db.collection(clients_collection).document(client_id).delete()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/clients/<client_id>', methods=['PUT'])
+def update_client(client_id):
+    try:
+        data = request.json
+        company_name = data.get('company_name')
+        if not company_name:
+            return jsonify({"status": "error", "message": "Company Name required"}), 400
+            
+        db.collection(clients_collection).document(client_id).update({"company_name": company_name})
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+from bq_import import sync_firestore_to_bigquery
+
+@app.route('/api/bq-export', methods=['POST'])
+def bq_export():
+    try:
+        sync_firestore_to_bigquery()
+        return jsonify({"status": "success", "message": "Exportación a BigQuery completada correctament."}), 200
+    except Exception as e:
+         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/expenses', methods=['POST'])
 def add_expense():

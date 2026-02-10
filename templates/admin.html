@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Gastos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Dropdown styles */
+        .dropdown-menu {
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-slate-800">Panel de Administración</h1>
+            <a href="/" class="text-sm font-semibold text-blue-600 hover:underline">Volver a Reportes</a>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-slate-200">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="adminTabs">
+                <li class="mr-2">
+                    <button onclick="switchTab('users')" id="tab-users"
+                        class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300">Usuarios</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('categories')" id="tab-categories"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Categorías</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('clients')" id="tab-clients"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Clientes</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('bq')" id="tab-bq"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">BigQuery</button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Content -->
+        <div id="content-users" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Administración de Usuarios</h2>
+            <!-- Add User Form -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <form id="addUserForm" class="flex gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Usuario</label>
+                        <input type="text" id="newUsername" required class="mt-1 p-2 border rounded w-full">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+                        <input type="password" id="newPassword" required class="mt-1 p-2 border rounded w-full">
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar
+                        Usuario</button>
+                </form>
+            </div>
+            <!-- User List -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Usuario</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userList" class="bg-white divide-y divide-gray-200">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="content-categories" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Mantenimiento de Categorías</h2>
+            <!-- Add Category Form -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <form id="addCategoryForm" class="flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Nombre Categoría</label>
+                        <input type="text" id="newCategoryName" required class="mt-1 p-2 border rounded w-full">
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar
+                        Categoría</button>
+                </form>
+            </div>
+            <!-- Category List -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nombre</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryList" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="content-clients" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Mantenimiento de Clientes</h2>
+            <!-- Add Client Form -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <form id="addClientForm" class="flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Nombre Cliente</label>
+                        <input type="text" id="newClientName" required class="mt-1 p-2 border rounded w-full">
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar
+                        Cliente</button>
+                </form>
+            </div>
+            <!-- Client List -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nombre</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientList" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="content-bq" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">BigQuery Export</h2>
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <p class="mb-4 text-gray-600">Exportar datos de Firestore a BigQuery manualmente.</p>
+                <button onclick="triggerExport()" id="bqBtn"
+                    class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                    Ejecutar Exportación
+                </button>
+                <div id="bqStatus" class="mt-4 text-sm font-medium"></div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                <h3 id="editModalTitle" class="text-lg font-bold mb-4">Editar</h3>
+                <form id="editForm">
+                    <div class="mb-4">
+                        <label id="editInputLabel" class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                        <input type="text" id="editInput" class="w-full p-2 border rounded">
+                        <p id="editHelpText" class="text-xs text-gray-500 mt-1 hidden">Ingrese la nueva contraseña</p>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="toast"
+            class="fixed bottom-5 right-5 bg-blue-600 text-white px-6 py-3 rounded-xl shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+            Mensaje
+        </div>
+    </div>
+
+    <script>
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('users');
+            loadUsers();
+            loadCategories();
+            loadClients();
+
+            // Click outside to close menus
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.action-btn')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.remove('show'));
+                }
+            });
+        });
+
+        // Tabs Logic
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+
+            document.querySelectorAll('#adminTabs button').forEach(el => {
+                el.classList.remove('text-blue-600', 'border-blue-600');
+                el.classList.add('border-transparent');
+            });
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.add('text-blue-600', 'border-blue-600');
+            activeBtn.classList.remove('border-transparent');
+        }
+
+        // --- MENU LOGIC ---
+        function toggleMenu(id) {
+            const menu = document.getElementById(id);
+            const isShown = menu.classList.contains('show');
+            // Close all others
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.remove('show'));
+            // Toggle current
+            if (!isShown) menu.classList.add('show');
+        }
+
+        // --- EDIT MODAL LOGIC ---
+        let currentEdit = null;
+
+        function openEditModal(type, id, currentValue) {
+            currentEdit = { type, id };
+            const modal = document.getElementById('editModal');
+            const title = document.getElementById('editModalTitle');
+            const label = document.getElementById('editInputLabel');
+            const input = document.getElementById('editInput');
+            const help = document.getElementById('editHelpText');
+
+            modal.classList.remove('hidden');
+            help.classList.add('hidden');
+
+            if (type === 'user') {
+                title.innerText = `Editar Usuario: ${id}`;
+                label.innerText = 'Nueva Contraseña';
+                input.type = 'password';
+                input.value = '';
+                input.placeholder = 'Dejar vacío para no cambiar';
+                help.classList.remove('hidden');
+            } else if (type === 'category') {
+                title.innerText = 'Renombrar Categoría';
+                label.innerText = 'Nombre';
+                input.type = 'text';
+                input.value = currentValue;
+            } else if (type === 'client') {
+                title.innerText = 'Renombrar Cliente';
+                label.innerText = 'Nombre';
+                input.type = 'text';
+                input.value = currentValue;
+            }
+            input.focus();
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            currentEdit = null;
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentEdit) return;
+
+            const value = document.getElementById('editInput').value;
+            const { type, id } = currentEdit;
+            let url, body;
+
+            if (type === 'user') {
+                url = `/api/users/${id}`;
+                body = { password: value };
+            } else if (type === 'category') {
+                url = `/api/categories/${id}`;
+                body = { name: value };
+            } else if (type === 'client') {
+                url = `/api/clients/${id}`;
+                body = { company_name: value }; // Using company_name for imports compat
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (res.ok) {
+                    showToast('Actualizado correctamente');
+                    closeEditModal();
+                    if (type === 'user') loadUsers();
+                    else if (type === 'category') loadCategories();
+                    else if (type === 'client') loadClients();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || 'Error al actualizar');
+                }
+            } catch (error) {
+                showToast('Error de conexión');
+            }
+        });
+
+        // --- RENDER HELPER ---
+        function renderActions(type, id, value) {
+            const menuId = `menu-${type}-${id.replace(/\s+/g, '-')}`;
+            // value is passed as string, escape quotes if needed
+            const safeValue = value ? value.replace(/'/g, "\\'") : '';
+
+            return `
+                <div class="relative action-btn">
+                    <button onclick="toggleMenu('${menuId}')" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                    </button>
+                    <div id="${menuId}" class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+                        <div class="py-1">
+                            <button onclick="openEditModal('${type}', '${id}', '${safeValue}')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Editar
+                            </button>
+                            ${id !== 'admin' ? `
+                            <button onclick="deleteItem('${type}', '${id}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                Eliminar
+                            </button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- GENERIC DELETE ---
+        async function deleteItem(type, id) {
+            if (!confirm(`¿Eliminar ${type === 'user' ? 'usuario' : type === 'category' ? 'categoría' : 'cliente'}?`)) return;
+
+            let url;
+            if (type === 'user') url = `/api/users/${id}`;
+            else if (type === 'category') url = `/api/categories/${id}`;
+            else if (type === 'client') url = `/api/clients/${id}`;
+
+            try {
+                await fetch(url, { method: 'DELETE' });
+                showToast('Eliminado');
+                if (type === 'user') loadUsers();
+                else if (type === 'category') loadCategories();
+                else if (type === 'client') loadClients();
+            } catch (e) { showToast('Error al eliminar'); }
+        }
+
+        // --- USERS ---
+        async function loadUsers() {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const list = document.getElementById('userList');
+            list.innerHTML = users.map(u => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${u}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                        ${renderActions('user', u, '')}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (res.ok) {
+                    showToast('Usuario creado');
+                    e.target.reset();
+                    loadUsers();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || 'Error al crear');
+                }
+            } catch (e) { showToast('Error de conexión'); }
+        });
+
+        // --- CATEGORIES ---
+        async function loadCategories() {
+            const res = await fetch('/api/categories');
+            const data = await res.json();
+            document.getElementById('categoryList').innerHTML = data.map(c => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                        ${renderActions('category', c, c)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newCategoryName').value;
+            await fetch('/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            e.target.reset();
+            loadCategories();
+            showToast('Categoría agregada');
+        });
+
+        // --- CLIENTS ---
+        async function loadClients() {
+            const res = await fetch('/api/clients');
+            const data = await res.json();
+            document.getElementById('clientList').innerHTML = data.map(c => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                        ${renderActions('client', c, c)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addClientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newClientName').value;
+            await fetch('/api/clients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            e.target.reset();
+            loadClients();
+            showToast('Cliente agregado');
+        });
+
+        // --- BQ EXPORT ---
+        async function triggerExport() {
+            const btn = document.getElementById('bqBtn');
+            const status = document.getElementById('bqStatus');
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
+            status.innerText = "";
+
+            try {
+                const res = await fetch('/api/bq-export', { method: 'POST' });
+                const data = await res.json();
+                status.innerText = data.message;
+                status.className = "mt-4 text-sm font-medium text-green-600";
+            } catch (e) {
+                status.innerText = "Error ejecutando exportación";
+                status.className = "mt-4 text-sm font-medium text-red-600";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Ejecutar Exportación";
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('opacity-0');
+            setTimeout(() => t.classList.add('opacity-0'), 3000);
+        }
+    </script>
+
+</body>
+
+</html>
