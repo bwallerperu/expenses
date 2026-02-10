@@ -54,18 +54,19 @@ steps:
     args:
       - '-c'
       - |
-        # Fetch tags pointing at the current commit
+        # Use $$ for Bash variables to avoid Cloud Build substitution errors
         CURRENT_TAG=$(git tag --points-at HEAD)
         
-        if [[ "$CURRENT_TAG" == *"-deploy" ]]; then
-          echo "Found tag ending in -deploy ($CURRENT_TAG). Proceeding with deployment..."
+        if [[ "$$CURRENT_TAG" == *"-deploy" ]]; then
+          echo "Found tag ending in -deploy ($$CURRENT_TAG). Proceeding with deployment..."
           gcloud run deploy expenses-app \
             --image gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA \
             --region us-central1 \
             --allow-unauthenticated \
             --service-account expenses-runner@surfn-peru.iam.gserviceaccount.com
         else
-          echo "No tag ending in -deploy found (Current tag: '$CURRENT_TAG'). Skipping deployment."
+          echo "No tag ending in -deploy found (Current tag: '$$CURRENT_TAG'). Skipping deployment."
         fi
+        
 images:
   - 'gcr.io/$PROJECT_ID/expenses-app:$SHORT_SHA'
