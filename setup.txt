@@ -140,3 +140,11 @@ gcloud iam service-accounts add-iam-policy-binding expenses-runner@surfn-peru.ia
   --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
   --role="roles/iam.serviceAccountUser" --condition=None
 
+
+
+#Can you build me the Gcloud command set to create a bigquery data set called "gastos-rep" in the US-Multiregion with a create table command with the same firestore structure
+bq mk --location=US --dataset gastos-rep
+bq mk --table \
+  --description "Table for Firestore expenses" \
+  gastos-rep.transacciones \
+  categoria:STRING,cliente:STRING,descripcion:STRING,ejecutivo:STRING,establecimiento:STRING,fecha:DATE,moneda:STRING,monto:INT64,reportado_en:TIMESTAMP
