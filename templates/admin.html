@@ -49,8 +49,12 @@
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Clientes</button>
                 </li>
                 <li class="mr-2">
-                    <button onclick="switchTab('bq')" id="tab-bq"
-                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">BigQuery</button>
+                    <button onclick="switchTab('analytics')" id="tab-analytics"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Analytics</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('finance')" id="tab-finance"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Finanzas</button>
                 </li>
             </ul>
         </div>
@@ -149,15 +153,78 @@
             </div>
         </div>
 
-        <div id="content-bq" class="tab-content hidden">
-            <h2 class="text-xl font-semibold mb-4">BigQuery Export</h2>
-            <div class="bg-white p-6 rounded-lg shadow text-center">
-                <p class="mb-4 text-gray-600">Exportar datos de Firestore a BigQuery manualmente.</p>
-                <button onclick="triggerExport()" id="bqBtn"
-                    class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition">
-                    Ejecutar Exportación
-                </button>
-                <div id="bqStatus" class="mt-4 text-sm font-medium"></div>
+        <div id="content-analytics" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Analytics & Reportes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- BigQuery Export -->
+                <div class="bg-white p-6 rounded-lg shadow text-center">
+                    <h3 class="text-lg font-medium mb-4">BigQuery Export</h3>
+                    <p class="mb-4 text-gray-600">Exportar datos de Firestore a BigQuery manualmente.</p>
+                    <button onclick="triggerExport()" id="bqBtn"
+                        class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition w-full md:w-auto">
+                        Ejecutar Exportación
+                    </button>
+                    <div id="bqStatus" class="mt-4 text-sm font-medium"></div>
+                </div>
+
+                <!-- Looker Studio -->
+                <div class="bg-white p-6 rounded-lg shadow text-center">
+                    <h3 class="text-lg font-medium mb-4">Looker Studio</h3>
+                    <p class="mb-4 text-gray-600">Visualizar reportes y métricas.</p>
+                    <a href="https://lookerstudio.google.com/u/0/reporting/4970db43-4044-40d0-900c-03e51e3daa68/page/4QDoF"
+                        target="_blank"
+                        class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition w-full md:w-auto">
+                        Abrir Reporte en Looker Studio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-finance" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Resumen Financiero (YTD)</h2>
+
+            <!-- Settings Card -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-lg font-medium mb-4">Configuración de Ventas</h3>
+                <div class="flex items-end gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Ventas Anuales (YTD)</label>
+                        <input type="number" id="salesYtdInput" class="mt-1 p-2 border rounded w-full"
+                            placeholder="0.00">
+                    </div>
+                    <button onclick="saveFinancialSettings()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Limit Card -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-500 uppercase">Límite Permitido (0.5%)</h3>
+                    <p class="text-3xl font-bold text-slate-800 mt-2" id="allowedLimitDisplay">S/ 0.00</p>
+                    <p class="text-sm text-gray-500 mt-1">De las ventas reportadas</p>
+                </div>
+
+                <!-- Expenses Card -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-500 uppercase">Gastos Ejecutados (YTD)</h3>
+                    <p class="text-3xl font-bold text-slate-800 mt-2" id="expensesYtdDisplay">S/ 0.00</p>
+                    <p class="text-sm text-gray-500 mt-1" id="expensesYearDisplay">Año 2024</p>
+                </div>
+            </div>
+
+            <!-- Status Banner -->
+            <div id="financeStatusBanner" class="mt-6 p-4 rounded-lg hidden">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0" id="financeStatusIcon"></div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium" id="financeStatusTitle">Estado</h3>
+                        <div class="text-sm" id="financeStatusMessage"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -463,6 +530,81 @@
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Ejecutar Exportación";
+            }
+        }
+
+        // --- FINANCIALS ---
+        async function loadFinancials() {
+            try {
+                // 1. Get Settings
+                const settingsRes = await fetch('/api/settings');
+                const settings = await settingsRes.json();
+                const sales = settings.sales_ytd || 0;
+
+                document.getElementById('salesYtdInput').value = sales;
+
+                // 2. Get Summary
+                const summaryRes = await fetch('/api/financial-summary');
+                const summary = await summaryRes.json();
+                const expenses = summary.total_expenses_ytd || 0;
+
+                // 3. Update UI
+                const limit = sales * 0.005;
+                const formatter = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' });
+
+                document.getElementById('allowedLimitDisplay').innerText = formatter.format(limit);
+                document.getElementById('expensesYtdDisplay').innerText = formatter.format(expenses);
+                document.getElementById('expensesYearDisplay').innerText = `Año ${summary.year}`;
+
+                // 4. Update Status Banner
+                const banner = document.getElementById('financeStatusBanner');
+                const title = document.getElementById('financeStatusTitle');
+                const msg = document.getElementById('financeStatusMessage');
+
+                banner.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+
+                if (expenses <= limit) {
+                    banner.classList.add('bg-green-100', 'text-green-800');
+                    title.innerText = "Dentro del Presupuesto";
+                    msg.innerText = `Tienes un saldo a favor de ${formatter.format(limit - expenses)}`;
+                } else {
+                    banner.classList.add('bg-red-100', 'text-red-800');
+                    title.innerText = "Presupuesto Excedido";
+                    msg.innerText = `Has excedido el límite por ${formatter.format(expenses - limit)}`;
+                }
+
+            } catch (e) {
+                console.error("Error loading financials", e);
+                showToast("Error cargando finanzas");
+            }
+        }
+
+        async function saveFinancialSettings() {
+            const sales = document.getElementById('salesYtdInput').value;
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sales_ytd: sales })
+                });
+
+                if (res.ok) {
+                    showToast('Configuración guardada');
+                    loadFinancials();
+                } else {
+                    showToast('Error al guardar');
+                }
+            } catch (e) {
+                showToast('Error de conexión');
+            }
+        }
+
+        // Hook up tab switch to load data
+        const originalSwitchTab = switchTab;
+        switchTab = function (tab) {
+            originalSwitchTab(tab);
+            if (tab === 'finance') {
+                loadFinancials();
             }
         }
 

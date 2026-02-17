@@ -15,7 +15,9 @@ db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)
 collection_name = "expenses"
 users_collection = "users"
 categories_collection = "categories"
+categories_collection = "categories"
 clients_collection = "clients"
+settings_collection = "settings"
 
 def initialize_categories():
     """Inicializa la colección de categorías si está vacía."""
@@ -349,6 +351,58 @@ def delete_expense(doc_id):
     try:
         db.collection(collection_name).document(doc_id).delete()
         return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    try:
+        doc = db.collection(settings_collection).document('global').get()
+        if doc.exists:
+            return jsonify(doc.to_dict()), 200
+        else:
+            return jsonify({"sales_ytd": 0}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    try:
+        data = request.json
+        sales_ytd = data.get('sales_ytd')
+        if sales_ytd is None:
+            return jsonify({"status": "error", "message": "sales_ytd required"}), 400
+            
+        db.collection(settings_collection).document('global').set({"sales_ytd": float(sales_ytd)}, merge=True)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/financial-summary', methods=['GET'])
+def get_financial_summary():
+    try:
+        # Get start of current year
+        import datetime
+        current_year = datetime.datetime.now().year
+        start_of_year = f"{current_year}-01-01"
+        
+        # Calculate Total Expenses YTD
+        expenses = db.collection(collection_name).where("fecha", ">=", start_of_year).stream()
+        total_expenses = 0.0
+        
+        for doc in expenses:
+            data = doc.to_dict()
+            monto = data.get('monto')
+            if monto:
+                try:
+                    total_expenses += float(monto)
+                except ValueError:
+                    pass # Ignore invalid numbers
+                    
+        return jsonify({
+            "year": current_year,
+            "total_expenses_ytd": total_expenses
+        }), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
