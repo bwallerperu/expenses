@@ -150,3 +150,6 @@ bq mk --table \
   --description "Table for Firestore expenses" \
   gastos-rep.transacciones \
   categoria:STRING,cliente:STRING,descripcion:STRING,ejecutivo:STRING,establecimiento:STRING,fecha:DATE,moneda:STRING,monto:INT64,reportado_en:TIMESTAMP
+
+
+  
