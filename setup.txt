@@ -1,4 +1,4 @@
-.\# SETUP AND DEPLOYMENT GUIDE
+# SETUP AND DEPLOYMENT GUIDE
 # Do this once in your terminal to setup a git alias
 # git config --global alias.deploy '!git tag "$(git log -1 --pretty=%B | head -n 1 | tr " " "-")-deploy" && git push origin --tags'
 # git config --global alias.latest '!git fetch origin -q && git log -1 origin/main --pretty=%B'
@@ -17,8 +17,6 @@ latest = !git fetch origin -q && git log -1 origin/main --pretty=%B
 # git commit -am "x.x.x" 
 # git push
 # git deploy
-
-.\.venv\Scripts\activate.bat (activates the virtual environment)
 
 
 ## 1. Local Setup
@@ -103,7 +101,7 @@ gcloud projects add-iam-policy-binding surfn-peru \
 
 # 4. Trigger Deployment (Terminal)
 git add .
-git commit -m "Your update message [deploy]"
+git commit -am "Your update message [deploy]"
 git push origin main
 
 # Note: If you omit '[deploy]', Cloud Build will still build the image but SKIP the deployment.
