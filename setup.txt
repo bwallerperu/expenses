@@ -4,7 +4,18 @@
 # git config --global alias.latest '!git fetch origin -q && git log -1 origin/main --pretty=%B'
 # or in windows edit the .gitconfig file
 
+# Allows you to edit the git config file
 git config --global --edit
+
+# activates the virtual environment
+.venv\Scripts\activate.bat
+
+# Then use:
+# git commit -am "x.x.x" 
+# git push
+# git deploy
+
+
 
 deploy = "!f() { \
     tag_name=$(git log -1 --pretty=%B | head -n 1 | tr ' ' '-')-deploy; \
@@ -12,11 +23,6 @@ deploy = "!f() { \
 }; f"
 latest = !git fetch origin -q && git log -1 origin/main --pretty=%B
 
-
-# Then use:
-# git commit -am "x.x.x" 
-# git push
-# git deploy
 
 
 ## 1. Local Setup
@@ -152,4 +158,3 @@ bq mk --table \
   categoria:STRING,cliente:STRING,descripcion:STRING,ejecutivo:STRING,establecimiento:STRING,fecha:DATE,moneda:STRING,monto:INT64,reportado_en:TIMESTAMP
 
 
-  

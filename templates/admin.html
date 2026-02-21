@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Gastos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -55,6 +56,11 @@
                 <li class="mr-2">
                     <button onclick="switchTab('finance')" id="tab-finance"
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Finanzas</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('client-stats')" id="tab-client-stats"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Gastos
+                        por Cliente</button>
                 </li>
             </ul>
         </div>
@@ -223,6 +229,38 @@
                     <div class="ml-3">
                         <h3 class="text-lg font-medium" id="financeStatusTitle">Estado</h3>
                         <div class="text-sm" id="financeStatusMessage"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-client-stats" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Distribución de Gastos por Cliente</h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Data Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Cliente</th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Gastado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientStatsList" class="bg-white divide-y divide-gray-200 text-sm">
+                            <!-- JS loaded -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pie Chart Container -->
+                <div class="bg-white p-6 rounded-lg shadow flex flex-col items-center justify-center">
+                    <div style="max-width: 400px; width: 100%;">
+                        <canvas id="clientPieChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -601,10 +639,80 @@
 
         // Hook up tab switch to load data
         const originalSwitchTab = switchTab;
+        let clientChart = null;
+
         switchTab = function (tab) {
             originalSwitchTab(tab);
             if (tab === 'finance') {
                 loadFinancials();
+            } else if (tab === 'client-stats') {
+                loadClientStats();
+            }
+        }
+
+        async function loadClientStats() {
+            try {
+                const res = await fetch('/api/expenses-by-client');
+                const data = await res.json();
+
+                const formatter = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' });
+
+                // 1. Render Table
+                const list = document.getElementById('clientStatsList');
+                list.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${item.client}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatter.format(item.total)}</td>
+                    </tr>
+                `).join('');
+
+                // 2. Render Chart
+                const ctx = document.getElementById('clientPieChart').getContext('2d');
+
+                // Destroy previous chart instance if exists
+                if (clientChart) {
+                    clientChart.destroy();
+                }
+
+                const labels = data.map(item => item.client);
+                const totals = data.map(item => item.total);
+
+                // Generate some colors
+                const colors = [
+                    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+                    '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#64748b'
+                ];
+
+                clientChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: totals,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${formatter.format(context.raw)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error("Error loading client stats", e);
+                showToast("Error cargando estadísticas por cliente");
             }
         }
 

@@ -346,6 +346,38 @@ def get_expenses():
         # Si Firestore arroja un error de índice faltante, el mensaje contendrá el link para crearlo.
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/expenses-by-client', methods=['GET'])
+def get_expenses_by_client():
+    try:
+        # Fetch all expenses
+        # Note: In a real app with many records, you'd aggregate in a database or use a cache.
+        docs = db.collection(collection_name).stream()
+        
+        client_totals = {}
+        for doc in docs:
+            data = doc.to_dict()
+            client = data.get('cliente', 'Sin Cliente')
+            monto = data.get('monto')
+            
+            if monto:
+                try:
+                    amount = float(monto)
+                    client_totals[client] = client_totals.get(client, 0.0) + amount
+                except ValueError:
+                    pass # Skip invalid numbers
+        
+        # Format for frontend (sorted by amount descending)
+        sorted_stats = sorted(
+            [{"client": k, "total": v} for k, v in client_totals.items()],
+            key=lambda x: x['total'],
+            reverse=True
+        )
+        
+        return jsonify(sorted_stats), 200
+    except Exception as e:
+        print(f"ERROR en get_expenses_by_client: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/expenses/<doc_id>', methods=['DELETE'])
 def delete_expense(doc_id):
     try:
