@@ -15,7 +15,6 @@ db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID)
 collection_name = "expenses"
 users_collection = "users"
 categories_collection = "categories"
-categories_collection = "categories"
 clients_collection = "clients"
 settings_collection = "settings"
 
@@ -382,6 +381,19 @@ def get_expenses_by_client():
 def delete_expense(doc_id):
     try:
         db.collection(collection_name).document(doc_id).delete()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/expenses/<doc_id>', methods=['PUT'])
+def update_expense(doc_id):
+    try:
+        data = request.json
+        # Convert monto to float if present
+        if 'monto' in data:
+            data['monto'] = float(data['monto'])
+        
+        db.collection(collection_name).document(doc_id).update(data)
         return jsonify({"status": "success"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

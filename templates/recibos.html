@@ -30,16 +30,11 @@
     <div id="loginView" class="min-h-[80vh] flex items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md">
             <div class="text-center mb-8">
-                <div
-                    class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                        </path>
-                    </svg>
+                <div class="mb-4">
+                    <img src="/static/logo.png" alt="UIB Logo" class="h-32 w-auto mx-auto drop-shadow-sm">
                 </div>
-                <h1 id="authTitle" class="text-2xl font-bold text-slate-800">Acceso Ejecutivo</h1>
-                <p id="authSubtitle" class="text-slate-500 text-sm">Ingrese sus credenciales para reportar</p>
+                <h1 class="text-2xl font-bold text-slate-800">Aplicación de Administración de Gastos</h1>
+                <p id="authSubtitle" class="text-slate-500 text-sm mt-1">Acceso Ejecutivo</p>
             </div>
 
             <form id="loginForm" class="space-y-6">
@@ -88,15 +83,17 @@
     <!-- PANTALLA PRINCIPAL (DASHBOARD) -->
     <div id="mainView" class="max-w-6xl mx-auto hidden">
         <!-- Header con Logout -->
-        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-left">
-                <h1 class="text-3xl font-bold text-slate-800">Reporte de Gastos</h1>
-                <p class="text-slate-500">Sesión iniciada como: <span id="currentUserLabel"
-                        class="font-bold text-blue-600"></span></p>
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center gap-4">
+                <img src="/static/logo.png" alt="UIB Logo" class="h-20 w-auto">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Aplicación de Administración de Gastos</h1>
+                    <p class="text-slate-500 text-sm">Sesión: <span id="currentUserLabel" class="font-bold text-blue-600"></span></p>
+                </div>
             </div>
             <button onclick="logout()"
-                class="text-sm font-semibold text-slate-500 hover:text-red-600 flex items-center transition-colors">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold hover:bg-red-100 transition-colors border border-red-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                     </path>
@@ -280,6 +277,59 @@
                 </div>
             </div>
         </div>
+
+        <!-- Edit Expense Modal -->
+        <div id="editExpenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Editar Registro</h3>
+                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <form id="editExpenseForm" class="space-y-4">
+                    <input type="hidden" id="editDocId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+                            <input type="date" id="editFecha" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Monto (S/.)</label>
+                            <input type="number" id="editMonto" step="0.01" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Establecimiento</label>
+                        <input type="text" id="editEstablecimiento" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+                        <select id="editCategoria" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Cliente</label>
+                        <select id="editCliente" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                        <textarea id="editDescripcion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-8">
+                        <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-100 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btnUpdate" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-100">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -302,6 +352,9 @@
             loadCategories(); // Load categories dynamically
             loadClients(); // Load clients dynamically
 
+            // Copy options to edit modal selects when they are loaded
+            // We'll do this inside loadCategories and loadClients
+
             // Event listener para búsqueda rápida
             document.getElementById('searchInput').addEventListener('input', debounce(fetchExpenses, 500));
         };
@@ -315,13 +368,17 @@
                 if (response.ok) {
                     const categories = await response.json();
 
+                    const editCategoriaSelect = document.getElementById('editCategoria');
+
                     // Clear existing options (except default)
                     categoriaSelect.innerHTML = '<option value="" disabled selected>Seleccione categoría...</option>';
                     filterCategory.innerHTML = '<option value="">Todas</option>';
+                    editCategoriaSelect.innerHTML = '<option value="" disabled selected>Seleccione categoría...</option>';
 
                     categories.forEach(c => {
                         categoriaSelect.add(new Option(c, c));
                         filterCategory.add(new Option(c, c));
+                        editCategoriaSelect.add(new Option(c, c));
                     });
                 } else {
                     console.error("Error loading categories");
@@ -342,13 +399,17 @@
                 if (response.ok) {
                     const clients = await response.json();
 
+                    const editClienteSelect = document.getElementById('editCliente');
+
                     // Clear existing options (except default)
                     clienteSelect.innerHTML = '<option value="" disabled selected>Seleccione cliente...</option>';
                     filterClient.innerHTML = '<option value="">Todos</option>';
+                    editClienteSelect.innerHTML = '<option value="" disabled selected>Seleccione cliente...</option>';
 
                     clients.forEach(c => {
                         clienteSelect.add(new Option(c, c));
                         filterClient.add(new Option(c, c));
+                        editClienteSelect.add(new Option(c, c));
                     });
                 } else {
                     console.error("Error loading clients");
@@ -638,7 +699,67 @@
             }
         }
 
+        let currentExpenses = [];
+
+        function openEditModal(id) {
+            const entry = currentExpenses.find(e => e.id === id);
+            if (!entry) return;
+
+            document.getElementById('editDocId').value = id;
+            document.getElementById('editFecha').value = entry.fecha;
+            document.getElementById('editMonto').value = entry.monto;
+            document.getElementById('editEstablecimiento').value = entry.establecimiento;
+            document.getElementById('editCategoria').value = entry.categoria;
+            document.getElementById('editCliente').value = entry.cliente;
+            document.getElementById('editDescripcion').value = entry.descripcion || '';
+
+            document.getElementById('editExpenseModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editExpenseModal').classList.add('hidden');
+        }
+
+        document.getElementById('editExpenseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editDocId').value;
+            const btn = document.getElementById('btnUpdate');
+            btn.disabled = true;
+            btn.innerText = 'Actualizando...';
+
+            const updateData = {
+                fecha: document.getElementById('editFecha').value,
+                monto: parseFloat(document.getElementById('editMonto').value),
+                establecimiento: document.getElementById('editEstablecimiento').value,
+                categoria: document.getElementById('editCategoria').value,
+                cliente: document.getElementById('editCliente').value,
+                descripcion: document.getElementById('editDescripcion').value
+            };
+
+            try {
+                const response = await fetch(`/api/expenses/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    showToast("Gasto actualizado correctamente");
+                    closeEditModal();
+                    fetchExpenses();
+                } else {
+                    showToast("Error al actualizar");
+                }
+            } catch (error) {
+                showToast("Error de conexión");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Guardar Cambios';
+            }
+        });
+
         function updateUI(expenseData) {
+            currentExpenses = expenseData;
             const tableBody = document.getElementById('recordsTable');
             document.getElementById('recordCount').innerText = `${expenseData.length} Registros`;
 
@@ -658,9 +779,14 @@
                         </td>
                         <td class="py-4 px-2 font-bold text-slate-900">S/. ${item.monto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td>
                         <td class="py-4 px-2 text-right">
-                            <button onclick="deleteRecord('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="openEditModal('${item.id}')" class="text-slate-300 hover:text-blue-500 transition-colors" title="Editar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button onclick="deleteRecord('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors" title="Eliminar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
