@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, request, jsonify
+from werkzeug.utils import secure_filename
 from google.cloud import firestore
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -87,13 +88,31 @@ def is_admin(user_id):
     # TODO: In the future, check role in DB
     return user_id and (user_id.startswith("Gerente-") or user_id == "admin")
 
+def get_global_settings():
+    try:
+        doc = db.collection(settings_collection).document('global').get()
+        if doc.exists:
+            return doc.to_dict()
+    except Exception as e:
+        print(f"Error fetching global settings: {e}")
+    
+    # Default fallback
+    return {
+        "sales_ytd": 0,
+        "company_name": "Aplicación de Administración de Gastos",
+        "company_address": "",
+        "logo_url": "/static/logo.png"
+    }
+
 @app.route('/admin')
 def admin_dashboard():
-    return render_template('admin.html')
+    settings = get_global_settings()
+    return render_template('admin.html', settings=settings)
 
 @app.route('/')
 def index():
-    return render_template('recibos.html')
+    settings = get_global_settings()
+    return render_template('recibos.html', settings=settings)
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -401,11 +420,8 @@ def update_expense(doc_id):
 @app.route('/api/settings', methods=['GET'])
 def get_settings():
     try:
-        doc = db.collection(settings_collection).document('global').get()
-        if doc.exists:
-            return jsonify(doc.to_dict()), 200
-        else:
-            return jsonify({"sales_ytd": 0}), 200
+        settings = get_global_settings()
+        return jsonify(settings), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -413,12 +429,47 @@ def get_settings():
 def update_settings():
     try:
         data = request.json
-        sales_ytd = data.get('sales_ytd')
-        if sales_ytd is None:
-            return jsonify({"status": "error", "message": "sales_ytd required"}), 400
+        updates = {}
+        
+        if 'sales_ytd' in data:
+            updates['sales_ytd'] = float(data['sales_ytd'])
+        if 'company_name' in data:
+            updates['company_name'] = data['company_name']
+        if 'company_address' in data:
+            updates['company_address'] = data['company_address']
             
-        db.collection(settings_collection).document('global').set({"sales_ytd": float(sales_ytd)}, merge=True)
+        if not updates:
+            return jsonify({"status": "error", "message": "No valid data provided"}), 400
+            
+        db.collection(settings_collection).document('global').set(updates, merge=True)
         return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/upload-logo', methods=['POST'])
+def upload_logo():
+    try:
+        if 'logo' not in request.files:
+            return jsonify({"status": "error", "message": "No logo provided"}), 400
+            
+        file = request.files['logo']
+        if file.filename == '':
+            return jsonify({"status": "error", "message": "No selected file"}), 400
+            
+        if file:
+            filename = secure_filename(file.filename)
+            static_dir = os.path.join(app.root_path, 'static')
+            if not os.path.exists(static_dir):
+                os.makedirs(static_dir)
+                
+            filepath = os.path.join(static_dir, filename)
+            file.save(filepath)
+            
+            # Update DB with new logo URL
+            logo_url = f"/static/{filename}"
+            db.collection(settings_collection).document('global').set({"logo_url": logo_url}, merge=True)
+            
+            return jsonify({"status": "success", "logo_url": logo_url}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

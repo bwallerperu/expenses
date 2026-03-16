@@ -31,18 +31,24 @@
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div class="flex items-center gap-4">
-                <img src="/static/logo.png" alt="UIB Logo" class="h-20 w-auto">
+                <img src="{{ settings.logo_url|default('/static/logo.png') }}" alt="Company Logo" class="h-20 w-auto">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Aplicación de Administración de Gastos</h1>
-                    <p class="text-slate-500 text-sm font-medium">Panel de Administración</p>
+                    <h1 class="text-2xl font-bold text-slate-800">{{ settings.company_name|default('Aplicación de Administración de Gastos') }}</h1>
+                    <p class="text-slate-500 text-sm font-medium">{{ settings.company_address|default('Panel de Administración') }}</p>
                 </div>
             </div>
-            <a href="/" class="flex items-center gap-2 px-4 py-2 bg-slate-50 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors border border-blue-100">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Volver a Reportes
-            </a>
+            
+            <div class="flex flex-col items-end gap-2 text-right">
+                <p class="text-slate-500 text-sm">Sesión: <span class="font-bold text-blue-600">admin</span></p>
+                <div class="flex gap-2">
+                    <a href="/" class="flex items-center gap-2 px-4 py-2 bg-slate-50 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors border border-blue-100 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Volver a Reportes
+                    </a>
+                </div>
+            </div>
         </header>
 
         <!-- Tabs -->
@@ -72,6 +78,10 @@
                     <button onclick="switchTab('client-stats')" id="tab-client-stats"
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Gastos
                         por Cliente</button>
+                </li>
+                <li class="mr-2">
+                    <button onclick="switchTab('configurations')" id="tab-configurations"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Configuraciones</button>
                 </li>
             </ul>
         </div>
@@ -273,6 +283,49 @@
                     <div style="max-width: 400px; width: 100%;">
                         <canvas id="clientPieChart"></canvas>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-configurations" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-4">Configuraciones Globales</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Info form -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-medium mb-4">Información de la Empresa</h3>
+                    <form id="configInfoForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nombre de la Empresa</label>
+                            <input type="text" id="configCompanyName" class="mt-1 p-2 border rounded w-full" value="{{ settings.company_name|default('') }}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                            <input type="text" id="configCompanyAddress" class="mt-1 p-2 border rounded w-full" value="{{ settings.company_address|default('') }}">
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar Información</button>
+                    </form>
+                </div>
+
+                <!-- Logo form -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-medium mb-4">Logo de la Empresa</h3>
+                    <form id="configLogoForm" class="space-y-4">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img id="currentLogoPreview" src="{{ settings.logo_url|default('/static/logo.png') }}" class="h-20 w-auto border rounded p-1 bg-slate-50">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Subir nuevo logo</label>
+                                <input type="file" id="configLogoFile" accept="image/*" class="mt-1 block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-blue-50 file:text-blue-700
+                                  hover:file:bg-blue-100
+                                "/>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Subir Logo</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -647,6 +700,64 @@
                 showToast('Error de conexión');
             }
         }
+
+        document.getElementById('configInfoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('configCompanyName').value;
+            const address = document.getElementById('configCompanyAddress').value;
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ company_name: name, company_address: address })
+                });
+                if (res.ok) {
+                    showToast('Información de empresa guardada');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('Error al guardar configuración');
+                }
+            } catch (e) {
+                showToast('Error de conexión');
+            }
+        });
+
+        document.getElementById('configLogoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('configLogoFile');
+            if (!fileInput.files.length) {
+                showToast('Seleccione un archivo de logo primero');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('logo', fileInput.files[0]);
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = 'Subiendo...';
+            
+            try {
+                const res = await fetch('/api/upload-logo', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('currentLogoPreview').src = data.logo_url;
+                    showToast('Logo actualizado correctamente');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('Error al subir el logo');
+                    btn.disabled = false;
+                    btn.innerText = 'Subir Logo';
+                }
+            } catch (e) {
+                showToast('Error de conexión');
+                btn.disabled = false;
+                btn.innerText = 'Subir Logo';
+            }
+        });
 
         // Hook up tab switch to load data
         const originalSwitchTab = switchTab;
