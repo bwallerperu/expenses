@@ -169,6 +169,20 @@
                                 class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
                         </div>
 
+                        <!-- Foto del Recibo -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Foto del Recibo (Opcional)</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group" id="photoDropzone">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-slate-400 group-hover:text-blue-500" id="photoPlaceholder">
+                                    <svg class="w-8 h-8 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <p class="text-xs font-semibold">Cámara o Archivo</p>
+                                </div>
+                                <img id="photoPreview" class="hidden h-full w-full object-contain rounded-lg p-1" />
+                                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden">
+                            </label>
+                            <button type="button" id="btnRemovePhoto" class="hidden mt-2 text-xs text-red-500 font-bold hover:underline">Eliminar foto</button>
+                        </div>
+
                         <button type="submit" id="btnSubmit"
                             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-lg shadow-blue-200 flex justify-center items-center">
                             <span>Registrar Gasto</span>
@@ -318,6 +332,25 @@
                         <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
                         <textarea id="editDescripcion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                     </div>
+
+                    <!-- Foto del Recibo en Modal -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Foto del Recibo</label>
+                        <div class="flex items-center gap-4">
+                            <label class="flex-shrink-0 w-24 h-24 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                                <span class="text-[10px] text-slate-400 font-bold mt-1 uppercase">Cambiar</span>
+                                <input type="file" id="editFotoInput" accept="image/*" capture="environment" class="hidden">
+                            </label>
+                            <div class="flex-1 h-24 bg-slate-50 rounded-lg border border-slate-100 overflow-hidden relative group">
+                                <img id="editPhotoPreview" src="" class="w-full h-full object-contain hidden" />
+                                <div id="editPhotoNoExist" class="w-full h-full flex items-center justify-center text-slate-300 text-xs italic">Sin foto</div>
+                                <button type="button" id="btnRemoveEditPhoto" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-100 rounded-lg transition-colors">
@@ -329,6 +362,14 @@
                     </div>
                 </form>
             </div>
+        </div>
+
+        <!-- Image Viewer Lightbox -->
+        <div id="imageViewer" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[60] flex items-center justify-center p-4">
+            <button onclick="closeImageViewer()" class="absolute top-4 right-4 text-white hover:text-slate-300 transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <img id="viewerImage" src="" class="max-w-full max-h-full object-contain shadow-2xl" />
         </div>
     </div>
 
@@ -469,7 +510,7 @@
 
             if (isRegisterMode) {
                 // SWITCH TO REGISTER (Input Mode)
-                title.innerText = "Registrar Nuevo Usuario";
+                // title.innerText = "Registrar Nuevo Usuario"; // This element doesn't exist in the provided HTML
                 subTitle.innerText = "Cree una cuenta para empezar a reportar";
 
                 confirmPassDiv.classList.remove('hidden');
@@ -489,7 +530,7 @@
                 loginPass.placeholder = "Contraseña nueva";
             } else {
                 // SWITCH TO LOGIN (Dropdown Mode)
-                title.innerText = "Acceso Ejecutivo";
+                // title.innerText = "Acceso Ejecutivo"; // This element doesn't exist in the provided HTML
                 subTitle.innerText = "Ingrese sus credenciales para reportar";
 
                 confirmPassDiv.classList.add('hidden');
@@ -514,6 +555,87 @@
         }
 
         // LÓGICA DE AUTH (LOGIN / REGISTER)
+        // Image processing: helper to resize image
+        function resizeAndResample(file, maxWidth = 800) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = (maxWidth / width) * height;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                };
+            });
+        }
+
+        // Photo handling for Registration Form
+        let registroFotoBase64 = null;
+        const fotoInput = document.getElementById('fotoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoPlaceholder = document.getElementById('photoPlaceholder');
+        const btnRemovePhoto = document.getElementById('btnRemovePhoto');
+
+        fotoInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                registroFotoBase64 = await resizeAndResample(file);
+                photoPreview.src = registroFotoBase64;
+                photoPreview.classList.remove('hidden');
+                photoPlaceholder.classList.add('hidden');
+                btnRemovePhoto.classList.remove('hidden');
+            }
+        };
+
+        btnRemovePhoto.onclick = () => {
+            registroFotoBase64 = null;
+            fotoInput.value = '';
+            photoPreview.classList.add('hidden');
+            photoPlaceholder.classList.remove('hidden');
+            btnRemovePhoto.classList.add('hidden');
+        };
+
+        // Photo handling for Edit Modal
+        let editFotoBase64 = null;
+        const editFotoInput = document.getElementById('editFotoInput');
+        const editPhotoPreview = document.getElementById('editPhotoPreview');
+        const editPhotoNoExist = document.getElementById('editPhotoNoExist');
+        const btnRemoveEditPhoto = document.getElementById('btnRemoveEditPhoto');
+
+        editFotoInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                editFotoBase64 = await resizeAndResample(file);
+                editPhotoPreview.src = editFotoBase64;
+                editPhotoPreview.classList.remove('hidden');
+                editPhotoNoExist.classList.add('hidden');
+                btnRemoveEditPhoto.classList.remove('hidden');
+            }
+        };
+
+        btnRemoveEditPhoto.onclick = () => {
+            editFotoBase64 = null;
+            editFotoInput.value = '';
+            editPhotoPreview.classList.add('hidden');
+            editPhotoNoExist.classList.remove('hidden');
+            btnRemoveEditPhoto.classList.add('hidden');
+        };
+
+        // Submission Logic
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -656,7 +778,8 @@
                 monto: parseFloat(document.getElementById('monto').value),
                 descripcion: document.getElementById('descripcion').value,
                 moneda: "PEN",
-                reportado_en: new Date().toISOString()
+                reportado_en: new Date().toISOString(),
+                foto_recibo: registroFotoBase64 // Added field
             };
 
             try {
@@ -669,6 +792,10 @@
                 if (response.ok) {
                     showToast("Gasto registrado correctamente");
                     this.reset();
+                    registroFotoBase64 = null;
+                    photoPreview.classList.add('hidden');
+                    photoPlaceholder.classList.remove('hidden');
+                    btnRemovePhoto.classList.add('hidden');
                     document.getElementById('ejecutivo').value = currentUser;
                     document.getElementById('fecha').valueAsDate = new Date();
                     fetchExpenses();
@@ -712,12 +839,27 @@
             document.getElementById('editCategoria').value = entry.categoria;
             document.getElementById('editCliente').value = entry.cliente;
             document.getElementById('editDescripcion').value = entry.descripcion || '';
+            
+            // Handle Photo in Edit Modal
+            editFotoBase64 = entry.foto_recibo || null;
+            if (editFotoBase64) {
+                editPhotoPreview.src = editFotoBase64;
+                editPhotoPreview.classList.remove('hidden');
+                editPhotoNoExist.classList.add('hidden');
+                btnRemoveEditPhoto.classList.remove('hidden');
+            } else {
+                editPhotoPreview.classList.add('hidden');
+                editPhotoNoExist.classList.remove('hidden');
+                btnRemoveEditPhoto.classList.add('hidden');
+            }
 
             document.getElementById('editExpenseModal').classList.remove('hidden');
         }
 
         function closeEditModal() {
             document.getElementById('editExpenseModal').classList.add('hidden');
+            editFotoBase64 = null;
+            editFotoInput.value = '';
         }
 
         document.getElementById('editExpenseForm').addEventListener('submit', async function(e) {
@@ -733,7 +875,8 @@
                 establecimiento: document.getElementById('editEstablecimiento').value,
                 categoria: document.getElementById('editCategoria').value,
                 cliente: document.getElementById('editCliente').value,
-                descripcion: document.getElementById('editDescripcion').value
+                descripcion: document.getElementById('editDescripcion').value,
+                foto_recibo: editFotoBase64 // Update field
             };
 
             try {
@@ -780,6 +923,13 @@
                         <td class="py-4 px-2 font-bold text-slate-900">S/. ${item.monto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td>
                         <td class="py-4 px-2 text-right">
                             <div class="flex gap-2 justify-end">
+                                ${item.foto_recibo ? `
+                                <button onclick="viewPhoto('${item.foto_recibo}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Ver Recibo">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                </button>
+                                ` : `
+                                <div class="w-5 h-5"></div>
+                                `}
                                 <button onclick="openEditModal('${item.id}')" class="text-slate-300 hover:text-blue-500 transition-colors" title="Editar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
@@ -802,6 +952,18 @@
                 toast.classList.add('translate-y-20', 'opacity-0');
                 toast.classList.remove('translate-y-0', 'opacity-100');
             }, 3000);
+        }
+
+        function viewPhoto(base64) {
+            if (!base64) return;
+            const viewer = document.getElementById('imageViewer');
+            const img = document.getElementById('viewerImage');
+            img.src = base64;
+            viewer.classList.remove('hidden');
+        }
+
+        function closeImageViewer() {
+            document.getElementById('imageViewer').classList.add('hidden');
         }
 
         function debounce(func, timeout = 300) {
