@@ -110,18 +110,18 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+        <div class="w-full">
             <!-- Formulario Section -->
-            <div class="lg:col-span-1">
+            <div id="registerView" class="hidden max-w-xl mx-auto">
                 <div class="bg-white p-6 rounded-2xl custom-shadow border border-slate-100">
-                    <h2 class="text-xl font-semibold mb-6 text-slate-700 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Nuevo Registro
-                    </h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-slate-700 flex items-center">
+                            <button type="button" onclick="switchView('list')" class="mr-3 p-2 -ml-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="Volver a la lista">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            </button>
+                            Nuevo Registro
+                        </h2>
+                    </div>
 
                     <form id="expenseForm" class="space-y-4">
                         <!-- Ejecutivo (Bloqueado) -->
@@ -157,10 +157,19 @@
                         <!-- Cliente -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Cliente Vinculado</label>
-                            <select id="cliente" required
+                            <select id="cliente" required onchange="handleNewClientToggle('cliente', 'newClienteContainer', 'newClienteInput')"
                                 class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                                 <option value="" disabled selected>Seleccione cliente...</option>
                             </select>
+                        </div>
+                        <div id="newClienteContainer" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <label class="block text-sm font-bold text-blue-800 mb-1">Nombre del Nuevo Cliente</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="newClienteInput" placeholder="Ingrese nuevo cliente"
+                                    class="w-full p-2.5 bg-white border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <button type="button" onclick="addClientInline('cliente', 'newClienteInput', 'newClienteContainer')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg transition-colors whitespace-nowrap">Añadir</button>
+                            </div>
                         </div>
 
                         <!-- Monto -->
@@ -200,15 +209,19 @@
             </div>
 
             <!-- Listado y Filtros Section -->
-            <div class="lg:col-span-2 space-y-6">
+            <div id="listView" class="space-y-6">
                 <!-- Tabla de Registros -->
                 <div class="bg-white p-6 rounded-2xl custom-shadow border border-slate-100 overflow-hidden">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <div class="flex items-center">
-                            <h2 class="text-xl font-semibold text-slate-700 mr-4">Registros</h2>
-                            <span id="recordCount"
-                                class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0
-                                Registros</span>
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <h2 class="text-xl font-semibold text-slate-700 flex items-center">
+                                Registros
+                                <span id="recordCount" class="ml-3 bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0 Registros</span>
+                            </h2>
+                            <button type="button" onclick="switchView('register')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 shadow-md shadow-blue-200 ml-auto md:ml-0 whitespace-nowrap">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Nuevo Gasto
+                            </button>
                         </div>
                         <div class="flex gap-2 w-full md:w-auto">
                             <button onclick="toggleFilters()"
@@ -275,11 +288,10 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-100">
-                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
-                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Lugar / Cliente
-                                    </th>
-                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Categoría</th>
-                                    <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase">Monto</th>
+                                    <th onclick="handleSort('fecha')" class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase cursor-pointer hover:text-slate-800 select-none group transition-colors">Fecha <span class="sort-icon inline-block text-[10px] ml-1 opacity-0 group-hover:opacity-50">↕</span></th>
+                                    <th onclick="handleSort('establecimiento')" class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase cursor-pointer hover:text-slate-800 select-none group transition-colors">Lugar / Cliente <span class="sort-icon inline-block text-[10px] ml-1 opacity-0 group-hover:opacity-50">↕</span></th>
+                                    <th onclick="handleSort('categoria')" class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase cursor-pointer hover:text-slate-800 select-none group transition-colors">Categoría <span class="sort-icon inline-block text-[10px] ml-1 opacity-0 group-hover:opacity-50">↕</span></th>
+                                    <th onclick="handleSort('monto')" class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase cursor-pointer hover:text-slate-800 select-none group transition-colors">Monto <span class="sort-icon inline-block text-[10px] ml-1 opacity-0 group-hover:opacity-50">↕</span></th>
                                     <th class="py-3 px-2 text-xs font-semibold text-slate-500 uppercase"></th>
                                 </tr>
                             </thead>
@@ -302,73 +314,109 @@
 
         <!-- Edit Expense Modal -->
         <div id="editExpenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-slate-100">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b border-slate-100">
                     <h3 class="text-xl font-bold text-slate-800">Editar Registro</h3>
-                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 
-                <form id="editExpenseForm" class="space-y-4">
-                    <input type="hidden" id="editDocId">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                            <input type="date" id="editFecha" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="editExpenseForm" class="flex flex-col md:flex-row gap-8">
+                        <input type="hidden" id="editDocId">
+                        
+                        <!-- Left col: form fields -->
+                        <div class="flex-1 space-y-4">
+                            <!-- Row 1: Fecha / Monto -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+                                    <input type="date" id="editFecha" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Monto (S/.)</label>
+                                    <input type="number" id="editMonto" step="0.01" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            
+                            <!-- Row 2: Ejecutivo / Establecimiento -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Ejecutivo</label>
+                                    <input type="text" id="editEjecutivo" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-400" readonly title="Ejecutivo es tu usuario por defecto">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Establecimiento</label>
+                                    <input type="text" id="editEstablecimiento" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            
+                            <!-- Row 3: Cliente / Categoría -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Cliente</label>
+                                    <select id="editCliente" required onchange="handleNewClientToggle('editCliente', 'editNewClienteContainer', 'editNewClienteInput')" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+                                    <select id="editCategoria" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="editNewClienteContainer" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <label class="block text-sm font-bold text-blue-800 mb-1">Nombre del Nuevo Cliente</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="editNewClienteInput" placeholder="Ingrese nuevo cliente" class="w-full p-2.5 bg-white border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <button type="button" onclick="addClientInline('editCliente', 'editNewClienteInput', 'editNewClienteContainer')" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg transition-colors whitespace-nowrap">Añadir</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Descripción -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                                <textarea id="editDescripcion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Monto (S/.)</label>
-                            <input type="number" id="editMonto" step="0.01" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Establecimiento</label>
-                        <input type="text" id="editEstablecimiento" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
-                        <select id="editCategoria" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Cliente</label>
-                        <select id="editCliente" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
-                        <textarea id="editDescripcion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-
-                    <!-- Foto del Recibo en Modal -->
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Foto del Recibo</label>
-                        <div class="flex items-center gap-4">
-                            <label class="flex-shrink-0 w-24 h-24 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
-                                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
-                                <span class="text-[10px] text-slate-400 font-bold mt-1 uppercase">Cambiar</span>
+                        
+                        <!-- Right col: Photo -->
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Comprobante (Foto)</label>
+                            
+                            <!-- Top: Cambiar Foto Button -->
+                            <label class="w-full flex items-center justify-center p-3 mb-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer group text-blue-600">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                                <span class="text-sm font-bold">Seleccionar nueva foto</span>
                                 <input type="file" id="editFotoInput" accept="image/*" capture="environment" class="hidden">
                             </label>
-                            <div class="flex-1 h-24 bg-slate-50 rounded-lg border border-slate-100 overflow-hidden relative group">
-                                <img id="editPhotoPreview" src="" class="w-full h-full object-contain hidden" />
-                                <div id="editPhotoNoExist" class="w-full h-full flex items-center justify-center text-slate-300 text-xs italic">Sin foto</div>
-                                <button type="button" id="btnRemoveEditPhoto" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            
+                            <!-- Bottom: Photo Preview Area -->
+                            <div class="w-full bg-slate-50 rounded-lg border border-slate-200 min-h-[300px] flex items-center justify-center relative group p-2">
+                                <img id="editPhotoPreview" src="" class="max-h-[400px] w-auto object-contain hidden rounded shadow-sm" />
+                                <div id="editPhotoNoExist" class="text-slate-400 flex flex-col items-center">
+                                    <svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <span class="text-sm">Sin foto adjunta</span>
+                                </div>
+                                <button type="button" id="btnRemoveEditPhoto" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-red-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex justify-end gap-3 mt-8">
-                        <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-100 rounded-lg transition-colors">
-                            Cancelar
-                        </button>
-                        <button type="submit" id="btnUpdate" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-100">
-                            Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+                
+                <!-- Action Footer -->
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                    <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-200 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm">
+                        Cancelar
+                    </button>
+                    <button type="submit" form="editExpenseForm" id="btnUpdate" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-200">
+                        Guardar Cambios
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -454,6 +502,14 @@
                     clienteSelect.innerHTML = '<option value="" disabled selected>Seleccione cliente...</option>';
                     filterClient.innerHTML = '<option value="">Todos</option>';
                     editClienteSelect.innerHTML = '<option value="" disabled selected>Seleccione cliente...</option>';
+
+                    const newOpt = new Option("+ Nuevo Cliente...", "NEW_CLIENT");
+                    newOpt.className = 'font-bold text-blue-600 bg-blue-50';
+                    clienteSelect.add(newOpt);
+                    
+                    const newEditOpt = new Option("+ Nuevo Cliente...", "NEW_CLIENT");
+                    newEditOpt.className = 'font-bold text-blue-600 bg-blue-50';
+                    editClienteSelect.add(newEditOpt);
 
                     clients.forEach(c => {
                         clienteSelect.add(new Option(c, c));
@@ -698,6 +754,69 @@
             }
         }
 
+        function handleNewClientToggle(selectId, containerId, inputId) {
+            const selectEl = document.getElementById(selectId);
+            const containerEl = document.getElementById(containerId);
+            const inputEl = document.getElementById(inputId);
+
+            if (selectEl.value === 'NEW_CLIENT') {
+                containerEl.classList.remove('hidden');
+                inputEl.required = true;
+                selectEl.required = false;
+            } else {
+                containerEl.classList.add('hidden');
+                inputEl.required = false;
+                selectEl.required = true;
+            }
+        }
+
+        async function createClientAPI(name) {
+            try {
+                const response = await fetch('/api/clients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                if (response.ok) {
+                    await loadClients(); // Refresh lists
+                }
+            } catch (error) {
+                console.error("Error creating client dynamically", error);
+            }
+        }
+
+        async function addClientInline(selectId, inputId, containerId) {
+            const inputEl = document.getElementById(inputId);
+            const name = inputEl.value.trim();
+            if (!name) {
+                showToast("Ingrese un nombre de cliente");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/clients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                if (response.ok) {
+                    await loadClients(); // Refresh lists
+                    document.getElementById(selectId).value = name;
+                    document.getElementById(containerId).classList.add('hidden');
+                    inputEl.required = false;
+                    inputEl.value = '';
+                    document.getElementById(selectId).required = true;
+                    showToast("Cliente agregado exitosamente");
+                } else {
+                    showToast("Error al añadir cliente");
+                }
+            } catch (error) {
+                console.error("Error creating client inline", error);
+                showToast("Error de conexión");
+            }
+        }
+
         async function loginUser(username, password) {
             try {
                 const response = await fetch('/api/login', {
@@ -720,6 +839,19 @@
                 }
             } catch (error) {
                 showAuthError("Error de conexión");
+            }
+        }
+
+        function switchView(viewName) {
+            const registerView = document.getElementById('registerView');
+            const listView = document.getElementById('listView');
+
+            if (viewName === 'register') {
+                registerView.classList.remove('hidden');
+                listView.classList.add('hidden');
+            } else {
+                registerView.classList.add('hidden');
+                listView.classList.remove('hidden');
             }
         }
 
@@ -777,12 +909,18 @@
             btn.disabled = true;
             btn.innerText = 'Registrando...';
 
+            let finalClientName = document.getElementById('cliente').value;
+            if (finalClientName === 'NEW_CLIENT') {
+                finalClientName = document.getElementById('newClienteInput').value.trim();
+                await createClientAPI(finalClientName);
+            }
+
             const entry = {
                 ejecutivo: currentUser,
                 fecha: document.getElementById('fecha').value,
                 categoria: document.getElementById('categoria').value,
                 establecimiento: document.getElementById('establecimiento').value,
-                cliente: document.getElementById('cliente').value,
+                cliente: finalClientName,
                 monto: parseFloat(document.getElementById('monto').value),
                 descripcion: document.getElementById('descripcion').value,
                 moneda: "PEN",
@@ -800,13 +938,19 @@
                 if (response.ok) {
                     showToast("Gasto registrado correctamente");
                     this.reset();
+                    document.getElementById('photoPreview').classList.add('hidden');
+                    document.getElementById('photoPlaceholder').classList.remove('hidden');
+                    document.getElementById('btnRemovePhoto').classList.add('hidden');
                     registroFotoBase64 = null;
-                    photoPreview.classList.add('hidden');
-                    photoPlaceholder.classList.remove('hidden');
-                    btnRemovePhoto.classList.add('hidden');
+                    
+                    document.getElementById('newClienteContainer').classList.add('hidden');
+                    document.getElementById('cliente').required = true;
+                    document.getElementById('newClienteInput').required = false;
+
                     document.getElementById('ejecutivo').value = currentUser;
                     document.getElementById('fecha').valueAsDate = new Date();
                     fetchExpenses();
+                    switchView('list');
                 } else {
                     throw new Error("Fallo en el servidor");
                 }
@@ -835,14 +979,77 @@
         }
 
         let currentExpenses = [];
+        let sortColumn = 'fecha';
+        let sortAscending = false;
+
+        function handleSort(column) {
+            if (sortColumn === column) {
+                sortAscending = !sortAscending;
+            } else {
+                sortColumn = column;
+                sortAscending = true;
+            }
+            updateUI(currentExpenses);
+        }
+
+        function applySort() {
+            currentExpenses.sort((a, b) => {
+                let valA = a[sortColumn];
+                let valB = b[sortColumn];
+                
+                if (valA === undefined || valA === null) valA = '';
+                if (valB === undefined || valB === null) valB = '';
+
+                if (sortColumn === 'monto') {
+                    valA = parseFloat(valA);
+                    valB = parseFloat(valB);
+                } else {
+                    valA = valA.toString().toLowerCase();
+                    valB = valB.toString().toLowerCase();
+                }
+
+                if (valA < valB) return sortAscending ? -1 : 1;
+                if (valA > valB) return sortAscending ? 1 : -1;
+                
+                // Tie-breaker: newest `reportado_en` first
+                let tbA = a['reportado_en'] || '';
+                let tbB = b['reportado_en'] || '';
+                if (tbA < tbB) return 1;
+                if (tbA > tbB) return -1;
+                return 0;
+            });
+        }
+
+        function updateSortIcons() {
+            const ths = document.querySelectorAll('th[onclick^="handleSort"]');
+            ths.forEach(th => {
+                const iconSpan = th.querySelector('.sort-icon');
+                if (iconSpan) {
+                    const match = th.getAttribute('onclick').match(/'(.*?)'/);
+                    if (match) {
+                        const col = match[1];
+                        if (col === sortColumn) {
+                            iconSpan.innerText = sortAscending ? '↑' : '↓';
+                            iconSpan.classList.remove('opacity-0', 'group-hover:opacity-50');
+                            iconSpan.classList.add('opacity-100', 'text-blue-600', 'font-black');
+                        } else {
+                            iconSpan.innerText = '↕';
+                            iconSpan.classList.remove('opacity-100', 'text-blue-600', 'font-black');
+                            iconSpan.classList.add('opacity-0', 'group-hover:opacity-50');
+                        }
+                    }
+                }
+            });
+        }
 
         function openEditModal(id) {
             const entry = currentExpenses.find(e => e.id === id);
             if (!entry) return;
 
             document.getElementById('editDocId').value = id;
+            document.getElementById('editEjecutivo').value = entry.ejecutivo || currentUser;
             document.getElementById('editFecha').value = entry.fecha;
-            document.getElementById('editMonto').value = entry.monto;
+            document.getElementById('editMonto').value = Number(entry.monto).toFixed(2);
             document.getElementById('editEstablecimiento').value = entry.establecimiento;
             document.getElementById('editCategoria').value = entry.categoria;
             document.getElementById('editCliente').value = entry.cliente;
@@ -868,6 +1075,10 @@
             document.getElementById('editExpenseModal').classList.add('hidden');
             editFotoBase64 = null;
             editFotoInput.value = '';
+            document.getElementById('editNewClienteContainer').classList.add('hidden');
+            document.getElementById('editCliente').required = true;
+            document.getElementById('editNewClienteInput').required = false;
+            document.getElementById('editNewClienteInput').value = '';
         }
 
         document.getElementById('editExpenseForm').addEventListener('submit', async function(e) {
@@ -877,12 +1088,18 @@
             btn.disabled = true;
             btn.innerText = 'Actualizando...';
 
+            let finalClientName = document.getElementById('editCliente').value;
+            if (finalClientName === 'NEW_CLIENT') {
+                finalClientName = document.getElementById('editNewClienteInput').value.trim();
+                await createClientAPI(finalClientName);
+            }
+
             const updateData = {
                 fecha: document.getElementById('editFecha').value,
                 monto: parseFloat(document.getElementById('editMonto').value),
                 establecimiento: document.getElementById('editEstablecimiento').value,
                 categoria: document.getElementById('editCategoria').value,
-                cliente: document.getElementById('editCliente').value,
+                cliente: finalClientName,
                 descripcion: document.getElementById('editDescripcion').value,
                 foto_recibo: editFotoBase64 // Update field
             };
@@ -911,14 +1128,16 @@
 
         function updateUI(expenseData) {
             currentExpenses = expenseData;
+            applySort();
+            updateSortIcons();
             const tableBody = document.getElementById('recordsTable');
             document.getElementById('recordCount').innerText = `${expenseData.length} Registros`;
 
             if (expenseData.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">No se encontraron registros</td></tr>';
             } else {
-                tableBody.innerHTML = expenseData.map(item => `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                tableBody.innerHTML = currentExpenses.map(item => `
+                    <tr onclick="openEditModal('${item.id}')" class="border-b border-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
                         <td class="py-4 px-2 text-slate-500 font-medium">${item.fecha}</td>
                         <td class="py-4 px-2">
                             <div class="font-bold text-slate-800">${item.establecimiento}</div>
@@ -928,20 +1147,20 @@
                         <td class="py-4 px-2">
                             <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase">${item.categoria}</span>
                         </td>
-                        <td class="py-4 px-2 font-bold text-slate-900">S/. ${item.monto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td>
+                        <td class="py-4 px-2 font-bold text-slate-900">S/. ${item.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="py-4 px-2 text-right">
                             <div class="flex gap-2 justify-end">
                                 ${item.foto_recibo ? `
-                                <button onclick="viewPhoto('${item.foto_recibo}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Ver Recibo">
+                                <button onclick="event.stopPropagation(); viewPhoto('${item.foto_recibo}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Ver Recibo">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 </button>
                                 ` : `
                                 <div class="w-5 h-5"></div>
                                 `}
-                                <button onclick="openEditModal('${item.id}')" class="text-slate-300 hover:text-blue-500 transition-colors" title="Editar">
+                                <button onclick="event.stopPropagation(); openEditModal('${item.id}')" class="text-slate-300 hover:text-blue-500 transition-colors p-1" title="Editar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
-                                <button onclick="deleteRecord('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors" title="Eliminar">
+                                <button onclick="event.stopPropagation(); deleteRecord('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="Eliminar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </div>

@@ -99,6 +99,7 @@ def get_global_settings():
     # Default fallback
     return {
         "sales_ytd": 0,
+        "allowable_pct": 0.5,
         "company_name": "Aplicación de Administración de Gastos",
         "company_address": "",
         "logo_url": "/static/logo.png"
@@ -396,6 +397,56 @@ def get_expenses_by_client():
         print(f"ERROR en get_expenses_by_client: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/expenses-by-executive', methods=['GET'])
+def get_expenses_by_executive():
+    try:
+        docs = db.collection(collection_name).stream()
+        executive_totals = {}
+        for doc in docs:
+            data = doc.to_dict()
+            executive = data.get('ejecutivo', 'Sin Ejecutivo')
+            monto = data.get('monto')
+            if monto:
+                try:
+                    amount = float(monto)
+                    executive_totals[executive] = executive_totals.get(executive, 0.0) + amount
+                except ValueError:
+                    pass
+        sorted_stats = sorted(
+            [{"executive": k, "total": v} for k, v in executive_totals.items()],
+            key=lambda x: x['total'],
+            reverse=True
+        )
+        return jsonify(sorted_stats), 200
+    except Exception as e:
+        print(f"ERROR en get_expenses_by_executive: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/expenses-by-category', methods=['GET'])
+def get_expenses_by_category():
+    try:
+        docs = db.collection(collection_name).stream()
+        category_totals = {}
+        for doc in docs:
+            data = doc.to_dict()
+            category = data.get('categoria', 'Sin Categoría')
+            monto = data.get('monto')
+            if monto:
+                try:
+                    amount = float(monto)
+                    category_totals[category] = category_totals.get(category, 0.0) + amount
+                except ValueError:
+                    pass
+        sorted_stats = sorted(
+            [{"category": k, "total": v} for k, v in category_totals.items()],
+            key=lambda x: x['total'],
+            reverse=True
+        )
+        return jsonify(sorted_stats), 200
+    except Exception as e:
+        print(f"ERROR en get_expenses_by_category: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/expenses/<doc_id>', methods=['DELETE'])
 def delete_expense(doc_id):
     try:
@@ -433,6 +484,8 @@ def update_settings():
         
         if 'sales_ytd' in data:
             updates['sales_ytd'] = float(data['sales_ytd'])
+        if 'allowable_pct' in data:
+            updates['allowable_pct'] = float(data['allowable_pct'])
         if 'company_name' in data:
             updates['company_name'] = data['company_name']
         if 'company_address' in data:
