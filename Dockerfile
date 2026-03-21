@@ -10,6 +10,12 @@ ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
 
+# Install system dependencies (OpenCV headless dependencies and Tesseract)
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 

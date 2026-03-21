@@ -657,7 +657,33 @@
         fotoInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                registroFotoBase64 = await resizeAndResample(file);
+                photoPlaceholder.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando text</span></div>';
+                photoPlaceholder.classList.remove('text-slate-400', 'group-hover:text-blue-500');
+                
+                const initialBase64 = await resizeAndResample(file);
+                
+                try {
+                    const res = await fetch('/api/process-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: initialBase64 })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.status === "success") {
+                        registroFotoBase64 = data.image;
+                    } else {
+                        throw new Error(data.message || "Error procesando imagen");
+                    }
+                } catch (err) {
+                    console.error("Processing error:", err);
+                    showToast("No se pudo auto-recortar la foto. Usando original.");
+                    registroFotoBase64 = initialBase64;
+                }
+                
+                // Restoring placeholder content
+                photoPlaceholder.innerHTML = '<svg class="w-8 h-8 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><p class="text-xs font-semibold">Cámara o Archivo</p>';
+                photoPlaceholder.classList.add('text-slate-400', 'group-hover:text-blue-500');
+                
                 photoPreview.src = registroFotoBase64;
                 photoPreview.classList.remove('hidden');
                 photoPlaceholder.classList.add('hidden');
@@ -683,7 +709,30 @@
         editFotoInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                editFotoBase64 = await resizeAndResample(file);
+                editPhotoNoExist.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando text</span></div>';
+                
+                const initialBase64 = await resizeAndResample(file);
+                
+                try {
+                    const res = await fetch('/api/process-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: initialBase64 })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.status === "success") {
+                        editFotoBase64 = data.image;
+                    } else {
+                        throw new Error(data.message || "Error procesando imagen");
+                    }
+                } catch (err) {
+                    console.error("Processing error:", err);
+                    showToast("No se pudo auto-recortar la foto. Usando original.");
+                    editFotoBase64 = initialBase64;
+                }
+                
+                editPhotoNoExist.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
+                
                 editPhotoPreview.src = editFotoBase64;
                 editPhotoPreview.classList.remove('hidden');
                 editPhotoNoExist.classList.add('hidden');

@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from google.cloud import firestore
 from werkzeug.security import generate_password_hash, check_password_hash
+from image_processing import process_receipt_image
 
 app = Flask(__name__)
 
@@ -524,6 +525,20 @@ def upload_logo():
             
             return jsonify({"status": "success", "logo_url": logo_url}), 200
     except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/process-image', methods=['POST'])
+def process_image():
+    try:
+        data = request.json
+        base64_str = data.get('image')
+        if not base64_str:
+            return jsonify({"status": "error", "message": "No image provided"}), 400
+        
+        processed_base64 = process_receipt_image(base64_str)
+        return jsonify({"status": "success", "image": processed_base64}), 200
+    except Exception as e:
+        print(f"Error in process_image API: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/financial-summary', methods=['GET'])
