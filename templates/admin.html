@@ -63,16 +63,16 @@
         <div class="mb-6 border-b border-slate-200">
             <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="adminTabs">
                 <li class="mr-2">
+                    <button onclick="switchTab('clients')" id="tab-clients"
+                        class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300">Clientes</button>
+                </li>
+                <li class="mr-2">
                     <button onclick="switchTab('users')" id="tab-users"
-                        class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300">Usuarios</button>
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Usuarios</button>
                 </li>
                 <li class="mr-2">
                     <button onclick="switchTab('categories')" id="tab-categories"
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Categorías</button>
-                </li>
-                <li class="mr-2">
-                    <button onclick="switchTab('clients')" id="tab-clients"
-                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Clientes</button>
                 </li>
                 <li class="mr-2">
                     <button onclick="switchTab('analysis')" id="tab-analysis"
@@ -601,7 +601,7 @@
             let salesInput = document.getElementById('configSalesYtd');
             if(salesInput) formatCurrency(salesInput);
 
-            switchTab('users');
+            switchTab('clients');
             loadUsers();
             loadCategories();
             loadClients();
