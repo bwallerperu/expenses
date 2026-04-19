@@ -40,7 +40,7 @@
             
             <div class="flex flex-col items-end gap-2 text-right">
                 <div class="flex items-center gap-3">
-                    <button onclick="switchTab('configurations')" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-colors" title="Configuraciones">
+                    <button onclick="openEditModal('user', 'admin', '')" class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-full transition-colors" title="Cambiar Contraseña">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -75,20 +75,16 @@
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Clientes</button>
                 </li>
                 <li class="mr-2">
-                    <button onclick="switchTab('analytics')" id="tab-analytics"
-                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Analytics</button>
-                </li>
-                <li class="mr-2">
-                    <button onclick="switchTab('finance')" id="tab-finance"
-                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Finanzas</button>
+                    <button onclick="switchTab('analysis')" id="tab-analysis"
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Análisis</button>
                 </li>
                 <li class="mr-2">
                     <button onclick="switchTab('kpis')" id="tab-kpis"
                         class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Gastos-KPIs</button>
                 </li>
-                <li class="mr-2 hidden">
+                <li class="mr-2">
                     <button onclick="switchTab('configurations')" id="tab-configurations"
-                        class="hidden">Configuraciones</button>
+                        class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Configuración</button>
                 </li>
             </ul>
         </div>
@@ -172,9 +168,9 @@
                 </form>
             </div>
             <!-- Client List -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="bg-white rounded-lg shadow overflow-hidden overflow-y-auto max-h-[500px]">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Nombre</th>
@@ -187,155 +183,216 @@
             </div>
         </div>
 
-        <div id="content-analytics" class="tab-content hidden">
-            <h2 class="text-xl font-semibold mb-4">Analytics & Reportes</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- BigQuery Export -->
-                <div class="bg-white p-6 rounded-lg shadow text-center">
-                    <h3 class="text-lg font-medium mb-4">BigQuery Export</h3>
-                    <p class="mb-4 text-gray-600">Exportar datos de Firestore a BigQuery manualmente.</p>
-                    <button onclick="triggerExport()" id="bqBtn"
-                        class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition w-full md:w-auto">
-                        Ejecutar Exportación
-                    </button>
-                    <div id="bqStatus" class="mt-4 text-sm font-medium"></div>
-                </div>
+        <div id="content-analysis" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-6 italic text-slate-400">Panel de Análisis y Reportes</h2>
 
-                <!-- Looker Studio -->
-                <div class="bg-white p-6 rounded-lg shadow text-center">
-                    <h3 class="text-lg font-medium mb-4">Looker Studio</h3>
-                    <p class="mb-4 text-gray-600">Visualizar reportes y métricas.</p>
-                    <a href="https://lookerstudio.google.com/u/0/reporting/4970db43-4044-40d0-900c-03e51e3daa68/page/4QDoF"
-                        target="_blank"
-                        class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition w-full md:w-auto">
-                        Abrir Reporte en Looker Studio
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div id="content-finance" class="tab-content hidden">
-            <h2 class="text-xl font-semibold mb-4">Resumen Financiero (YTD)</h2>
-
-            <!-- Dashboard Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Limit Card -->
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-sm font-medium text-gray-500 uppercase" id="allowedLimitTitle">Límite Permitido (0.5%)</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-2" id="allowedLimitDisplay">S/ 0.00</p>
-                    <p class="text-sm text-gray-500 mt-1" id="allowedLimitSubtext">De las ventas reportadas</p>
-                </div>
-
-                <!-- Expenses Card -->
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-sm font-medium text-gray-500 uppercase">Gastos Ejecutados (YTD)</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-2" id="expensesYtdDisplay">S/ 0.00</p>
-                    <p class="text-sm text-gray-500 mt-1" id="expensesYearDisplay">Año 2024</p>
+            <!-- SECTION 1: RESUMEN YTD (from Finance) -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Resumen Financiero (YTD)
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <div id="analysis-status-bubble" class="px-4 py-2 text-white rounded-lg text-sm font-bold shadow-lg hidden">
+                            Estado: -
+                        </div>
+                        <div id="analysis-sales-total" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold shadow-lg">
+                            Ventas: S/ 0.00
+                        </div>
+                    </div>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase" id="allowedLimitTitle">Límite Permitido (0.5%)</h3>
+                        <p class="text-3xl font-bold text-slate-800 mt-2" id="allowedLimitDisplay">S/ 0.00</p>
+                        <p class="text-sm text-slate-400 mt-1" id="allowedLimitSubtext">De las ventas reportadas</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase">Gastos Ejecutados (YTD)</h3>
+                        <p class="text-3xl font-bold text-slate-800 mt-2" id="expensesYtdDisplay">S/ 0.00</p>
+                        <p class="text-sm text-slate-400 mt-1" id="expensesYearDisplay">Año 2024</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Status Banner -->
-            <div id="financeStatusBanner" class="mt-6 p-4 rounded-lg hidden">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0" id="financeStatusIcon"></div>
-                    <div class="ml-3">
-                        <h3 class="text-lg font-medium" id="financeStatusTitle">Estado</h3>
-                        <div class="text-sm" id="financeStatusMessage"></div>
+            <hr class="my-8 border-slate-200">
+
+            <!-- SECTION 2: EXPORT & TOOLS (from Analytics) -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    Herramientas de Datos
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow text-center border border-slate-100 italic">
+                        <h3 class="text-lg font-bold text-slate-700 mb-2">BigQuery Export</h3>
+                        <p class="text-sm text-slate-500 mb-4">Exportar datos de Firestore a BigQuery.</p>
+                        <button onclick="triggerExport()" id="bqBtn"
+                            class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 transition w-full md:w-auto text-sm">
+                            Ejecutar Exportación
+                        </button>
+                        <div id="bqStatus" class="mt-4 text-xs font-medium"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow text-center border border-slate-100">
+                        <h3 class="text-lg font-bold text-slate-700 mb-2">Looker Studio</h3>
+                        <p class="text-sm text-slate-500 mb-4">Visualizar dashboards avanzados.</p>
+                        <a href="https://lookerstudio.google.com/u/0/reporting/4970db43-4044-40d0-900c-03e51e3daa68/page/4QDoF"
+                            target="_blank"
+                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition w-full md:w-auto text-sm">
+                            Abrir Reporte
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- NEWLY SEPARATED KPI TAB -->
         <div id="content-kpis" class="tab-content hidden">
-            <h2 class="text-xl font-semibold mb-4">Gastos - Reportes y KPIs</h2>
-            
-            <div class="mb-6 flex space-x-4 border-b pb-4">
-                <button onclick="switchKpiTab('list')" id="btn-kpi-list" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow text-sm font-medium">Listado Completo</button>
-                <button onclick="switchKpiTab('client')" id="btn-kpi-client" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow border text-sm font-medium hover:bg-gray-50">Por Cliente</button>
-                <button onclick="switchKpiTab('executive')" id="btn-kpi-executive" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow border text-sm font-medium hover:bg-gray-50">Por Ejecutivo</button>
-                <button onclick="switchKpiTab('category')" id="btn-kpi-category" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow border text-sm font-medium hover:bg-gray-50">Por Categoría</button>
-            </div>
+            <!-- SECTION 3: DETALLE DE GASTOS (restored to own tab) -->
+            <div>
+                <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 0h6m-3 6V4m1 11H9m4 0h-4"></path></svg>
+                    Reportes y KPIs Detallados
+                </h3>
+                
+                <div class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div class="flex space-x-1">
+                        <button onclick="switchKpiTab('list')" id="btn-kpi-list" class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow text-xs font-bold transition-all">Listado</button>
+                        <button onclick="switchKpiTab('client')" id="btn-kpi-client" class="px-3 py-1.5 bg-white text-slate-600 rounded-md shadow border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">Por Cliente</button>
+                        <button onclick="switchKpiTab('executive')" id="btn-kpi-executive" class="px-3 py-1.5 bg-white text-slate-600 rounded-md shadow border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">Por Ejecutivo</button>
+                        <button onclick="switchKpiTab('category')" id="btn-kpi-category" class="px-3 py-1.5 bg-white text-slate-600 rounded-md shadow border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">Por Categoría</button>
+                    </div>
 
-            <!-- TAB 1: LISTADO COMPLETO -->
-            <div id="kpi-pane-list">
-                <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th onclick="sortKpiList('fecha')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Fecha <span class="sort-icon opacity-0">↓</span></th>
-                                <th onclick="sortKpiList('ejecutivo')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Ejecutivo <span class="sort-icon opacity-0">↓</span></th>
-                                <th onclick="sortKpiList('establecimiento')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Establecimiento <span class="sort-icon opacity-0">↓</span></th>
-                                <th onclick="sortKpiList('cliente')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Cliente <span class="sort-icon opacity-0">↓</span></th>
-                                <th onclick="sortKpiList('categoria')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Categoría <span class="sort-icon opacity-0">↓</span></th>
-                                <th onclick="sortKpiList('monto')" class="px-3 py-3 cursor-pointer select-none text-right whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-gray-100">Monto <span class="sort-icon opacity-0">↓</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="kpiTableBody" class="bg-white divide-y divide-gray-200 text-sm">
-                        </tbody>
-                    </table>
+                    <div id="kpi-summary-container" class="flex flex-wrap gap-2 items-center">
+                        <span id="kpi-filter-indicator" class="hidden text-xs font-medium text-rose-400 italic mr-2">
+                            * Filtrado
+                        </span>
+                        <div id="summary-total" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold shadow-lg">
+                            Total: S/ 0.00
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- TAB 2: CLIENTES -->
-            <div id="kpi-pane-client" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                <!-- KPI Panes -->
+                <div id="kpi-pane-list">
+                    <!-- Filters Bar -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 flex flex-wrap gap-4 items-end shadow-sm">
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase mb-1">
+                                Desde
+                                <svg id="icon-filter-date-from" class="w-3 h-3 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </label>
+                            <input type="date" id="filter-date-from" onchange="updateKpiFilters()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase mb-1">
+                                Hasta
+                                <svg id="icon-filter-date-to" class="w-3 h-3 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </label>
+                            <input type="date" id="filter-date-to" onchange="updateKpiFilters()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase mb-1">
+                                Ejecutivo
+                                <svg id="icon-filter-executive" class="w-3 h-3 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </label>
+                            <select id="filter-executive" onchange="updateKpiFilters()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase mb-1">
+                                Cliente
+                                <svg id="icon-filter-client" class="w-3 h-3 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </label>
+                            <select id="filter-client" onchange="updateKpiFilters()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase mb-1">
+                                Categoría
+                                <svg id="icon-filter-category" class="w-3 h-3 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </label>
+                            <select id="filter-category" onchange="updateKpiFilters()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                        <button onclick="clearKpiFilters()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg text-sm font-bold hover:bg-rose-100 transition-all">
+                            Limpiar
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden overflow-x-auto overflow-y-auto max-h-[600px] transition-all">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-slate-50 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gastado</th>
+                                    <th onclick="sortKpiList('fecha')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Fecha <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
+                                    <th onclick="sortKpiList('ejecutivo')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Ejecutivo <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
+                                    <th onclick="sortKpiList('establecimiento')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Establecimiento <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
+                                    <th onclick="sortKpiList('cliente')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Cliente <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
+                                    <th onclick="sortKpiList('categoria')" class="px-3 py-3 cursor-pointer select-none text-left whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Categoría <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
+                                    <th onclick="sortKpiList('monto')" class="px-3 py-3 cursor-pointer select-none text-right whitespace-nowrap text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100">Monto <span class="sort-icon opacity-0 text-blue-500">↓</span></th>
                                 </tr>
                             </thead>
-                            <tbody id="clientStatsList" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
+                            <tbody id="kpiTableBody" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
                         </table>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow flex flex-col items-center justify-center">
-                        <div style="max-width: 400px; width: 100%;">
+                </div>
+
+                <div id="kpi-pane-client" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden overflow-y-auto max-h-[500px]">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-slate-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Total Gastado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientStatsList" class="bg-white divide-y divide-gray-200 text-sm italic"></tbody>
+                            </table>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-100 flex items-center justify-center">
                             <canvas id="clientPieChart"></canvas>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- TAB 3: EJECUTIVOS -->
-            <div id="kpi-pane-executive" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ejecutivo</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gastado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="executiveStatsList" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
-                        </table>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow flex flex-col items-center justify-center">
-                        <div style="max-width: 400px; width: 100%;">
+                <div id="kpi-pane-executive" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden overflow-y-auto max-h-[500px]">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-slate-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Ejecutivo</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">Total Gastado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="executiveStatsList" class="bg-white divide-y divide-gray-200 text-sm italic"></tbody>
+                            </table>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-100 flex items-center justify-center">
                             <canvas id="executivePieChart"></canvas>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- TAB 4: CATEGORIAS -->
-            <div id="kpi-pane-category" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gastado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="categoryStatsList" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
-                        </table>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow flex flex-col items-center justify-center">
-                        <div style="max-width: 400px; width: 100%;">
+                <div id="kpi-pane-category" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden overflow-y-auto max-h-[500px]">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-slate-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Categoría</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">Total Gastado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryStatsList" class="bg-white divide-y divide-gray-200 text-sm italic"></tbody>
+                            </table>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-100 flex items-center justify-center">
                             <canvas id="categoryPieChart"></canvas>
                         </div>
                     </div>
@@ -505,13 +562,18 @@
                 </div>
                 
                 <!-- Action Footer -->
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                    <button type="button" onclick="closeExpenseModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-200 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm">
-                        Cancelar
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center rounded-b-2xl">
+                    <button type="button" onclick="deleteKpiExpense()" class="px-4 py-2 text-red-600 font-semibold hover:bg-red-50 border border-red-100 rounded-lg transition-colors">
+                        Eliminar Gasto
                     </button>
-                    <button type="submit" form="expenseEditForm" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-200">
-                        Guardar Cambios
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeExpenseModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-200 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm">
+                            Cancelar
+                        </button>
+                        <button type="submit" form="expenseEditForm" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-200">
+                            Guardar Cambios
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -564,6 +626,13 @@
             const activeBtn = document.getElementById(`tab-${tab}`);
             activeBtn.classList.add('text-blue-600', 'border-blue-600');
             activeBtn.classList.remove('border-transparent');
+
+            // --- CUSTOM TAB HOOKS ---
+            if (tab === 'analysis') {
+                loadFinancials();
+            } else if (tab === 'kpis') {
+                switchKpiTab('list');
+            }
         }
 
         // --- MENU LOGIC ---
@@ -838,22 +907,24 @@
                 document.getElementById('allowedLimitSubtext').innerText = `De las ventas reportadas (${formatter.format(sales)})`;
                 document.getElementById('expensesYtdDisplay').innerText = formatter.format(expenses);
                 document.getElementById('expensesYearDisplay').innerText = `Año ${summary.year}`;
+                
+                const salesBubble = document.getElementById('analysis-sales-total');
+                if (salesBubble) salesBubble.innerText = `Ventas: ${formatter.format(sales)}`;
 
-                // 4. Update Status Banner
-                const banner = document.getElementById('financeStatusBanner');
-                const title = document.getElementById('financeStatusTitle');
-                const msg = document.getElementById('financeStatusMessage');
+                // 4. Update Status Bubble
+                const statusBubble = document.getElementById('analysis-status-bubble');
+                if (statusBubble) {
+                    statusBubble.classList.remove('hidden', 'bg-emerald-500', 'bg-rose-500');
 
-                banner.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-
-                if (expenses <= limit) {
-                    banner.classList.add('bg-green-100', 'text-green-800');
-                    title.innerText = "Dentro del Presupuesto";
-                    msg.innerText = `Tienes un saldo a favor de ${formatter.format(limit - expenses)}`;
-                } else {
-                    banner.classList.add('bg-red-100', 'text-red-800');
-                    title.innerText = "Presupuesto Excedido";
-                    msg.innerText = `Has excedido el límite por ${formatter.format(expenses - limit)}`;
+                    if (expenses <= limit) {
+                        statusBubble.classList.add('bg-emerald-500');
+                        statusBubble.innerText = `OK: +${formatter.format(limit - expenses)}`;
+                        statusBubble.title = `Tienes un saldo a favor`;
+                    } else {
+                        statusBubble.classList.add('bg-rose-500');
+                        statusBubble.innerText = `EXC: -${formatter.format(expenses - limit)}`;
+                        statusBubble.title = `Has excedido el límite`;
+                    }
                 }
 
             } catch (e) {
@@ -939,6 +1010,89 @@
         let kpiSortCol = 'fecha';
         let kpiSortAsc = false;
         
+        let kpiFilters = {
+            dateFrom: '',
+            dateTo: '',
+            executive: '',
+            client: '',
+            category: ''
+        };
+
+        function updateKpiFilters() {
+            kpiFilters.dateFrom = document.getElementById('filter-date-from').value;
+            kpiFilters.dateTo = document.getElementById('filter-date-to').value;
+            kpiFilters.executive = document.getElementById('filter-executive').value;
+            kpiFilters.client = document.getElementById('filter-client').value;
+            kpiFilters.category = document.getElementById('filter-category').value;
+            // Toggle Icons
+            document.getElementById('icon-filter-date-from').classList.toggle('hidden', !kpiFilters.dateFrom);
+            document.getElementById('icon-filter-date-to').classList.toggle('hidden', !kpiFilters.dateTo);
+            document.getElementById('icon-filter-executive').classList.toggle('hidden', !kpiFilters.executive);
+            document.getElementById('icon-filter-client').classList.toggle('hidden', !kpiFilters.client);
+            document.getElementById('icon-filter-category').classList.toggle('hidden', !kpiFilters.category);
+
+            // Filters updated
+            renderKpiList();
+        }
+
+        function clearKpiFilters() {
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-executive').value = '';
+            document.getElementById('filter-client').value = '';
+            document.getElementById('filter-category').value = '';
+            // Hide Icons
+            document.getElementById('icon-filter-date-from').classList.add('hidden');
+            document.getElementById('icon-filter-date-to').classList.add('hidden');
+            document.getElementById('icon-filter-executive').classList.add('hidden');
+            document.getElementById('icon-filter-client').classList.add('hidden');
+            document.getElementById('icon-filter-category').classList.add('hidden');
+
+            kpiFilters = { dateFrom: '', dateTo: '', executive: '', client: '', category: '' };
+            renderKpiList();
+        }
+
+        function populateKpiFilterDropdowns() {
+            // 1. Executives (Unique from data)
+            const executives = [...new Set(allKpiExpenses.map(e => e.ejecutivo).filter(v => v))].sort();
+            const execSelect = document.getElementById('filter-executive');
+            const currentExec = execSelect.value;
+            execSelect.innerHTML = '<option value="">Todos</option>' + 
+                executives.map(e => `<option value="${e}" ${e === currentExec ? 'selected' : ''}>${e}</option>`).join('');
+
+            // 2. Clients (using global list)
+            const clientSelect = document.getElementById('filter-client');
+            const currentClient = clientSelect.value;
+            clientSelect.innerHTML = '<option value="">Todos</option>' + 
+                globalClients.map(c => `<option value="${c}" ${c === currentClient ? 'selected' : ''}>${c}</option>`).join('');
+
+            // 3. Categories (using global list)
+            const catSelect = document.getElementById('filter-category');
+            const currentCat = catSelect.value;
+            catSelect.innerHTML = '<option value="">Todas</option>' + 
+                globalCategories.map(c => `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${c}</option>`).join('');
+        }
+
+        function updateKpiSummaries(filteredData) {
+            const total = filteredData.reduce((sum, item) => sum + parseFloat(item.monto || 0), 0);
+            const formatter = { format: (val) => 'S/ ' + parseFloat(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) };
+            
+            const totalBox = document.getElementById('summary-total');
+            const indicator = document.getElementById('kpi-filter-indicator');
+            const formattedTotal = formatter.format(total);
+
+            totalBox.innerText = `Total: ${formattedTotal}`;
+
+            // Check if ANY filter is set (date range, executive, client, category)
+            const isFiltered = kpiFilters.dateFrom || kpiFilters.dateTo || kpiFilters.executive || kpiFilters.client || kpiFilters.category;
+            
+            if (isFiltered) {
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+        
         // Setup dropdowns globally or inside the edit modal
         let globalCategories = [];
         let globalClients = [];
@@ -957,40 +1111,57 @@
                 if(globalCategories.length === 0) fetch('/api/categories').then(r=>r.json()).then(d => {
                     globalCategories = d;
                     const cSelect = document.getElementById('editExpCategoria');
-                    cSelect.innerHTML = d.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                    if (cSelect) cSelect.innerHTML = d.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                    populateKpiFilterDropdowns();
                 });
                 
                 if(globalClients.length === 0) fetch('/api/clients').then(r=>r.json()).then(d => {
                     globalClients = d;
                     const cSelect = document.getElementById('editExpCliente');
                     cSelect.innerHTML = d.map(client => `<option value="${client}">${client}</option>`).join('');
+                    populateKpiFilterDropdowns();
                 });
             }
         }
 
         function switchKpiTab(pane) {
-            // Hide all
+            // Hide all panes
             ['list', 'client', 'executive', 'category'].forEach(p => {
-                document.getElementById('kpi-pane-' + p).classList.add('hidden');
-                let btn = document.getElementById('btn-kpi-' + p);
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-white', 'text-gray-700');
+                const paneEl = document.getElementById('kpi-pane-' + p);
+                if (paneEl) paneEl.classList.add('hidden');
+                
+                const btn = document.getElementById('btn-kpi-' + p);
+                if (btn) {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-white', 'text-slate-600');
+                }
             });
 
-            // Show target
-            document.getElementById('kpi-pane-' + pane).classList.remove('hidden');
-            let btn = document.getElementById('btn-kpi-' + pane);
-            btn.classList.remove('bg-white', 'text-gray-700');
-            btn.classList.add('bg-blue-600', 'text-white');
+            // Show target pane
+            const targetPane = document.getElementById('kpi-pane-' + pane);
+            if (targetPane) targetPane.classList.remove('hidden');
+            
+            const targetBtn = document.getElementById('btn-kpi-' + pane);
+            if (targetBtn) {
+                targetBtn.classList.remove('bg-white', 'text-slate-600');
+                targetBtn.classList.add('bg-blue-600', 'text-white');
+            }
+
+            const summaryContainer = document.getElementById('kpi-summary-container');
+            summaryContainer.classList.remove('hidden');
 
             if (pane === 'list') {
                 loadKpiList();
-            } else if (pane === 'client') {
-                loadClientStats();
-            } else if (pane === 'executive') {
-                loadExecutiveStats();
-            } else if (pane === 'category') {
-                loadCategoryStats();
+            } else {
+                clearKpiFilters(); // Clear filters when moving to other stats tabs
+                
+                if (pane === 'client') {
+                    loadClientStats();
+                } else if (pane === 'executive') {
+                    loadExecutiveStats();
+                } else if (pane === 'category') {
+                    loadCategoryStats();
+                }
             }
         }
 
@@ -1000,6 +1171,7 @@
                 const res = await fetch('/api/expenses?user_id=admin');
                 const data = await res.json();
                 allKpiExpenses = data;
+                populateKpiFilterDropdowns(); // Populate executives, clients, etc.
                 renderKpiList();
             } catch (e) {
                 console.error("Error loading KPI List", e);
@@ -1018,7 +1190,19 @@
         }
 
         function renderKpiList() {
-            let sorted = [...allKpiExpenses];
+            // Apply Filters
+            let filtered = allKpiExpenses.filter(item => {
+                if (kpiFilters.dateFrom && item.fecha < kpiFilters.dateFrom) return false;
+                if (kpiFilters.dateTo && item.fecha > kpiFilters.dateTo) return false;
+                if (kpiFilters.executive && item.ejecutivo !== kpiFilters.executive) return false;
+                if (kpiFilters.client && item.cliente !== kpiFilters.client) return false;
+                if (kpiFilters.category && item.categoria !== kpiFilters.category) return false;
+                return true;
+            });
+            
+            updateKpiSummaries(filtered);
+
+            let sorted = [...filtered];
             sorted.sort((a, b) => {
                 let valA = a[kpiSortCol];
                 let valB = b[kpiSortCol];
@@ -1193,6 +1377,30 @@
             editExpFotoInput.value = '';
         }
 
+        async function deleteKpiExpense() {
+            const id = document.getElementById('editExpId').value;
+            if (!id) return;
+            if (!confirm("¿Está seguro de eliminar este gasto definitivamente?")) return;
+
+            try {
+                const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Gasto eliminado');
+                    closeExpenseModal();
+                    await loadKpiList();
+                    // Re-render currently active sub-tab if it's a chart to reflect fresh numbers
+                    const activeBtn = document.querySelector('#content-kpis .bg-blue-600');
+                    const activePill = activeBtn ? activeBtn.id.replace('btn-kpi-', '') : 'list';
+                    switchKpiTab(activePill);
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || 'Error al eliminar');
+                }
+            } catch (e) {
+                showToast('Error de conexión');
+            }
+        }
+
         document.getElementById('expenseEditForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editExpId').value;
@@ -1230,8 +1438,7 @@
             }
         });
         
-        // --- END ---
-
+        // --- END OF MISC LOGIC ---
 
         async function loadClientStats() {
             try {
@@ -1244,7 +1451,9 @@
                 const list = document.getElementById('clientStatsList');
                 list.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${item.client}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                            <div class="max-w-[180px] truncate" title="${item.client}">${item.client}</div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatter.format(item.total)}</td>
                     </tr>
                 `).join('');
@@ -1293,6 +1502,11 @@
                     }
                 });
 
+                // 3. Update Global Summary Total
+                const total = data.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+                document.getElementById('summary-total').innerText = `Total: ${formatter.format(total)}`;
+                document.getElementById('kpi-filter-indicator').classList.add('hidden');
+
             } catch (e) {
                 console.error("Error loading client stats", e);
                 showToast("Error cargando estadísticas por cliente");
@@ -1308,7 +1522,9 @@
                 const list = document.getElementById('executiveStatsList');
                 list.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${item.executive}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                            <div class="max-w-[180px] truncate" title="${item.executive}">${item.executive}</div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatter.format(item.total)}</td>
                     </tr>
                 `).join('');
@@ -1325,6 +1541,11 @@
                     data: { labels: labels, datasets: [{ data: totals, backgroundColor: colors.slice(0, labels.length), borderWidth: 1 }] },
                     options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function (context) { return `${context.label}: ${formatter.format(context.raw)}`; } } } } }
                 });
+                // 3. Update Global Summary Total
+                const total = data.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+                document.getElementById('summary-total').innerText = `Total: ${formatter.format(total)}`;
+                document.getElementById('kpi-filter-indicator').classList.add('hidden');
+
             } catch (e) {
                 console.error("Error loading executive stats", e);
                 showToast("Error cargando estadísticas por ejecutivo");
@@ -1340,7 +1561,9 @@
                 const list = document.getElementById('categoryStatsList');
                 list.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${item.category}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                            <div class="max-w-[180px] truncate" title="${item.category}">${item.category}</div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatter.format(item.total)}</td>
                     </tr>
                 `).join('');
@@ -1357,6 +1580,11 @@
                     data: { labels: labels, datasets: [{ data: totals, backgroundColor: colors.slice(0, labels.length), borderWidth: 1 }] },
                     options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function (context) { return `${context.label}: ${formatter.format(context.raw)}`; } } } } }
                 });
+                // 3. Update Global Summary Total
+                const total = data.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+                document.getElementById('summary-total').innerText = `Total: ${formatter.format(total)}`;
+                document.getElementById('kpi-filter-indicator').classList.add('hidden');
+
             } catch (e) {
                 console.error("Error loading category stats", e);
                 showToast("Error cargando estadísticas por categoría");

@@ -31,73 +31,44 @@ def process_receipt_image(base64_str):
         print("Could not decode image with OpenCV")
         return base64_str
 
-    # 1. Edge Detection & Contour Cropping
+    # 1. Find the white paper
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    edged = cv2.Canny(blurred, 50, 150)
+    blurred = cv2.GaussianBlur(gray, (15, 15), 0)
     
-    # Thicken edges to close gaps
-    edged = cv2.dilate(edged, None, iterations=1)
-    edged = cv2.erode(edged, None, iterations=1)
+    # Otsu's thresholding automatically calculates the best threshold
+    # Since receipts are generally white/bright against a darker background
+    _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    # If the background is bright and the receipt is darker, Otsu might assign 255 to background.
+    # We check the border of the image. If the border is mostly 255, we invert the mask.
+    border_pixels = np.concatenate((thresh[0,:], thresh[-1,:], thresh[:,0], thresh[:,-1]))
+    if np.mean(border_pixels) > 127:
+        thresh = cv2.bitwise_not(thresh)
+        
+    # Morphological closing to fill in the black text holes inside the receipt mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
-    # Find contours
-    cnts, _ = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:5]
+    # Find contours of the white mask
+    cnts, _ = cv2.findContours(closed.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
     
-    screenCnt = None
     if cnts:
-        c = cnts[0] # The largest contour
-        # Process if contour is at least 5% of the image area
-        if cv2.contourArea(c) > (image.shape[0] * image.shape[1] * 0.05):
-            peri = cv2.arcLength(c, True)
+        c = cnts[0] # The largest dense blob (should be the receipt with text)
+        
+        # Lowered to 2% of image area to support long/far away receipts
+        if cv2.contourArea(c) > (image.shape[0] * image.shape[1] * 0.02):
+            x, y, w, h = cv2.boundingRect(c)
             
-            # Try varying epsilons for exact 4-point match
-            for eps in [0.02, 0.03, 0.04, 0.05]:
-                approx = cv2.approxPolyDP(c, eps * peri, True)
-                if len(approx) == 4:
-                    screenCnt = approx
-                    break
+            crop_x1 = max(0, x)
+            crop_x2 = min(image.shape[1], x + w)
+            crop_y1 = max(0, y)
+            crop_y2 = image.shape[0] # Drop the bottom to the end of the image
             
-            # If no exact 4-point match, fall back to minimum area bounding rectangle
-            if screenCnt is None:
-                rect = cv2.minAreaRect(c)
-                box = cv2.boxPoints(rect)
-                box = np.int32(box)
-                screenCnt = box.reshape(4, 1, 2)
-
-    if screenCnt is not None:
-        # We found a contour, apply perspective transform
-        pts = screenCnt.reshape(4, 2)
-        
-        # Order points: top-left, top-right, bottom-right, bottom-left
-        rect = np.zeros((4, 2), dtype="float32")
-        s = pts.sum(axis=1)
-        rect[0] = pts[np.argmin(s)]
-        rect[2] = pts[np.argmax(s)]
-        diff = np.diff(pts, axis=1)
-        rect[1] = pts[np.argmin(diff)]
-        rect[3] = pts[np.argmax(diff)]
-        
-        (tl, tr, br, bl) = rect
-        widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
-        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-        maxWidth = max(int(widthA), int(widthB))
-        
-        heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-        heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-        maxHeight = max(int(heightA), int(heightB))
-        
-        dst = np.array([
-            [0, 0],
-            [maxWidth - 1, 0],
-            [maxWidth - 1, maxHeight - 1],
-            [0, maxHeight - 1]
-        ], dtype="float32")
-        
-        M = cv2.getPerspectiveTransform(rect, dst)
-        processed_image = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+            processed_image = image[crop_y1:crop_y2, crop_x1:crop_x2]
+        else:
+            processed_image = image
     else:
-        # No suitable contour found, proceed with original image
         processed_image = image
 
     # 2. Text Orientation Correction

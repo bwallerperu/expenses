@@ -345,7 +345,7 @@ def get_expenses():
         # NOTA: Si se usan múltiples filtros de desigualdad, Firestore requiere un índice compuesto.
         query = query.order_by('fecha', direction=firestore.Query.DESCENDING)
         
-        docs = query.limit(100).stream()
+        docs = query.limit(1000).stream()
         
         results = []
         for doc in docs:

@@ -87,12 +87,12 @@
     <div id="mainView" class="max-w-6xl mx-auto hidden">
         <!-- Header con Logout -->
         <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div class="flex items-center gap-4">
-                <img src="{{ settings.logo_url|default('/static/logo.png') }}" alt="Company Logo" class="h-20 w-auto">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-800">{{ settings.company_name|default('Aplicación de Administración de Gastos') }}</h1>
+            <div class="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 md:gap-4 w-full md:w-auto">
+                <img src="{{ settings.logo_url|default('/static/logo.png') }}" alt="Company Logo" class="h-12 md:h-20 w-auto max-w-full object-contain">
+                <div class="w-full">
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800 break-words">{{ settings.company_name|default('Aplicación de Administración de Gastos') }}</h1>
                     {% if settings and settings.company_address %}
-                    <p class="text-slate-400 text-xs mt-1">{{ settings.company_address }}</p>
+                    <p class="text-slate-400 text-xs mt-1 break-words">{{ settings.company_address }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -197,7 +197,13 @@
                                 <img id="photoPreview" class="hidden h-full w-full object-contain rounded-lg p-1" />
                                 <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden">
                             </label>
-                            <button type="button" id="btnRemovePhoto" class="hidden mt-2 text-xs text-red-500 font-bold hover:underline">Eliminar foto</button>
+                            <div class="flex justify-between w-full mt-2">
+                                <button type="button" id="btnRemovePhoto" class="hidden text-xs text-red-500 font-bold hover:underline">Eliminar foto</button>
+                                <button type="button" id="btnRotatePhoto" class="hidden text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                    Rotar 90°
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" id="btnSubmit"
@@ -216,7 +222,7 @@
                         <div class="flex items-center gap-4 w-full md:w-auto">
                             <h2 class="text-xl font-semibold text-slate-700 flex items-center">
                                 Registros
-                                <span id="recordCount" class="ml-3 bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0 Registros</span>
+                                <span id="recordCount" class="ml-3 bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
                             </h2>
                             <button type="button" onclick="switchView('register')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 shadow-md shadow-blue-200 ml-auto md:ml-0 whitespace-nowrap">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -277,7 +283,7 @@
                         </div>
                         <div class="flex justify-end gap-2">
                             <button onclick="clearFilters()"
-                                class="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-2 transition-colors">Limpiar</button>
+                                class="text-xs font-bold text-rose-500 hover:text-rose-700 px-3 py-2 transition-colors">Limpiar</button>
                             <button onclick="fetchExpenses()"
                                 class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Aplicar
                                 Filtros</button>
@@ -400,8 +406,11 @@
                                     <svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     <span class="text-sm">Sin foto adjunta</span>
                                 </div>
-                                <button type="button" id="btnRemoveEditPhoto" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-red-600">
+                                <button type="button" id="btnRemoveEditPhoto" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-red-600" title="Eliminar">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                                <button type="button" id="btnRotateEditPhoto" class="absolute top-2 left-2 bg-blue-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-blue-600" title="Rotar 90°">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                 </button>
                             </div>
                         </div>
@@ -409,13 +418,18 @@
                 </div>
                 
                 <!-- Action Footer -->
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                    <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-200 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm">
-                        Cancelar
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center rounded-b-2xl">
+                    <button type="button" onclick="deleteRecord(document.getElementById('editDocId').value).then(success => { if(success) closeEditModal(); })" class="px-4 py-2 text-red-600 font-semibold hover:bg-red-50 border border-red-100 rounded-lg transition-colors">
+                        Eliminar Registro
                     </button>
-                    <button type="submit" form="editExpenseForm" id="btnUpdate" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-200">
-                        Guardar Cambios
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-slate-500 font-semibold hover:bg-slate-200 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm">
+                            Cancelar
+                        </button>
+                        <button type="submit" form="editExpenseForm" id="btnUpdate" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-200">
+                            Guardar Cambios
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -653,6 +667,24 @@
         const photoPreview = document.getElementById('photoPreview');
         const photoPlaceholder = document.getElementById('photoPlaceholder');
         const btnRemovePhoto = document.getElementById('btnRemovePhoto');
+        const btnRotatePhoto = document.getElementById('btnRotatePhoto');
+
+        async function rotateBase64Image(base64Image) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = base64Image;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.height;
+                    canvas.height = img.width;
+                    const ctx = canvas.getContext('2d');
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(90 * Math.PI / 180);
+                    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+            });
+        }
 
         fotoInput.onchange = async (e) => {
             const file = e.target.files[0];
@@ -688,6 +720,23 @@
                 photoPreview.classList.remove('hidden');
                 photoPlaceholder.classList.add('hidden');
                 btnRemovePhoto.classList.remove('hidden');
+                btnRotatePhoto.classList.remove('hidden');
+                btnRotatePhoto.classList.add('flex');
+            }
+        };
+
+        btnRotatePhoto.onclick = async () => {
+            if (registroFotoBase64) {
+                photoPlaceholder.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Rotando imagen...</div>';
+                photoPreview.classList.add('hidden');
+                photoPlaceholder.classList.remove('hidden');
+                
+                registroFotoBase64 = await rotateBase64Image(registroFotoBase64);
+                
+                photoPlaceholder.innerHTML = '<svg class="w-8 h-8 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><p class="text-xs font-semibold">Cámara o Archivo</p>';
+                photoPreview.src = registroFotoBase64;
+                photoPreview.classList.remove('hidden');
+                photoPlaceholder.classList.add('hidden');
             }
         };
 
@@ -697,6 +746,8 @@
             photoPreview.classList.add('hidden');
             photoPlaceholder.classList.remove('hidden');
             btnRemovePhoto.classList.add('hidden');
+            btnRotatePhoto.classList.add('hidden');
+            btnRotatePhoto.classList.remove('flex');
         };
 
         // Photo handling for Edit Modal
@@ -705,6 +756,7 @@
         const editPhotoPreview = document.getElementById('editPhotoPreview');
         const editPhotoNoExist = document.getElementById('editPhotoNoExist');
         const btnRemoveEditPhoto = document.getElementById('btnRemoveEditPhoto');
+        const btnRotateEditPhoto = document.getElementById('btnRotateEditPhoto');
 
         editFotoInput.onchange = async (e) => {
             const file = e.target.files[0];
@@ -737,6 +789,22 @@
                 editPhotoPreview.classList.remove('hidden');
                 editPhotoNoExist.classList.add('hidden');
                 btnRemoveEditPhoto.classList.remove('hidden');
+                btnRotateEditPhoto.classList.remove('hidden');
+            }
+        };
+
+        btnRotateEditPhoto.onclick = async () => {
+            if (editFotoBase64) {
+                editPhotoNoExist.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Rotando imagen...</div>';
+                editPhotoPreview.classList.add('hidden');
+                editPhotoNoExist.classList.remove('hidden');
+                
+                editFotoBase64 = await rotateBase64Image(editFotoBase64);
+                
+                editPhotoNoExist.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
+                editPhotoPreview.src = editFotoBase64;
+                editPhotoPreview.classList.remove('hidden');
+                editPhotoNoExist.classList.add('hidden');
             }
         };
 
@@ -746,6 +814,7 @@
             editPhotoPreview.classList.add('hidden');
             editPhotoNoExist.classList.remove('hidden');
             btnRemoveEditPhoto.classList.add('hidden');
+            btnRotateEditPhoto.classList.add('hidden');
         };
 
         // Submission Logic
@@ -990,6 +1059,8 @@
                     document.getElementById('photoPreview').classList.add('hidden');
                     document.getElementById('photoPlaceholder').classList.remove('hidden');
                     document.getElementById('btnRemovePhoto').classList.add('hidden');
+                    document.getElementById('btnRotatePhoto').classList.add('hidden');
+                    document.getElementById('btnRotatePhoto').classList.remove('flex');
                     registroFotoBase64 = null;
                     
                     document.getElementById('newClienteContainer').classList.add('hidden');
@@ -1012,19 +1083,21 @@
         });
 
         async function deleteRecord(id) {
-            if (!confirm("¿Está seguro de eliminar este registro?")) return;
+            if (!confirm("¿Está seguro de eliminar este registro?")) return false;
 
             try {
                 const response = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
                 if (response.ok) {
                     showToast("Registro eliminado");
                     fetchExpenses();
+                    return true;
                 } else {
                     showToast("Error al eliminar");
                 }
             } catch (error) {
                 showToast("Error de conexión");
             }
+            return false;
         }
 
         let currentExpenses = [];
@@ -1111,10 +1184,12 @@
                 editPhotoPreview.classList.remove('hidden');
                 editPhotoNoExist.classList.add('hidden');
                 btnRemoveEditPhoto.classList.remove('hidden');
+                btnRotateEditPhoto.classList.remove('hidden');
             } else {
                 editPhotoPreview.classList.add('hidden');
                 editPhotoNoExist.classList.remove('hidden');
                 btnRemoveEditPhoto.classList.add('hidden');
+                btnRotateEditPhoto.classList.add('hidden');
             }
 
             document.getElementById('editExpenseModal').classList.remove('hidden');
@@ -1180,7 +1255,7 @@
             applySort();
             updateSortIcons();
             const tableBody = document.getElementById('recordsTable');
-            document.getElementById('recordCount').innerText = `${expenseData.length} Registros`;
+            document.getElementById('recordCount').innerText = `${expenseData.length}`;
 
             if (expenseData.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">No se encontraron registros</td></tr>';
