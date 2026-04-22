@@ -195,7 +195,7 @@
                                     <p class="text-xs font-semibold">Cámara o Archivo</p>
                                 </div>
                                 <img id="photoPreview" class="hidden h-full w-full object-contain rounded-lg p-1" />
-                                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden">
+                                <input type="file" id="fotoInput" accept="image/*,application/pdf" capture="environment" class="hidden">
                             </label>
                             <div class="flex justify-between w-full mt-2">
                                 <button type="button" id="btnRemovePhoto" class="hidden text-xs text-red-500 font-bold hover:underline">Eliminar foto</button>
@@ -203,6 +203,7 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                     Rotar 90°
                                 </button>
+                                <button type="button" id="btnViewPhoto" class="hidden text-xs text-green-600 font-bold hover:underline">Ver comprobante</button>
                             </div>
                         </div>
 
@@ -396,7 +397,7 @@
                             <label class="w-full flex items-center justify-center p-3 mb-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer group text-blue-600">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
                                 <span class="text-sm font-bold">Seleccionar nueva foto</span>
-                                <input type="file" id="editFotoInput" accept="image/*" capture="environment" class="hidden">
+                                <input type="file" id="editFotoInput" accept="image/*,application/pdf" capture="environment" class="hidden">
                             </label>
                             
                             <!-- Bottom: Photo Preview Area -->
@@ -411,6 +412,9 @@
                                 </button>
                                 <button type="button" id="btnRotateEditPhoto" class="absolute top-2 left-2 bg-blue-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-blue-600" title="Rotar 90°">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                </button>
+                                <button type="button" id="btnViewEditPhoto" class="absolute top-2 left-12 bg-green-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-green-700" title="Ver Full">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
                             </div>
                         </div>
@@ -661,6 +665,15 @@
             });
         }
 
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
         // Photo handling for Registration Form
         let registroFotoBase64 = null;
         const fotoInput = document.getElementById('fotoInput');
@@ -668,6 +681,7 @@
         const photoPlaceholder = document.getElementById('photoPlaceholder');
         const btnRemovePhoto = document.getElementById('btnRemovePhoto');
         const btnRotatePhoto = document.getElementById('btnRotatePhoto');
+        const btnViewPhoto = document.getElementById('btnViewPhoto');
 
         async function rotateBase64Image(base64Image) {
             return new Promise((resolve) => {
@@ -689,39 +703,56 @@
         fotoInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                photoPlaceholder.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando text</span></div>';
+                if (file.size > 900000) {
+                    showToast("El archivo es muy pesado (máx 900KB).");
+                    e.target.value = '';
+                    return;
+                }
+
+                photoPlaceholder.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando archivo...</div>';
                 photoPlaceholder.classList.remove('text-slate-400', 'group-hover:text-blue-500');
                 
-                const initialBase64 = await resizeAndResample(file);
-                
-                try {
-                    const res = await fetch('/api/process-image', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: initialBase64 })
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.status === "success") {
-                        registroFotoBase64 = data.image;
-                    } else {
-                        throw new Error(data.message || "Error procesando imagen");
+                if (file.type === 'application/pdf') {
+                    registroFotoBase64 = await readFileAsBase64(file);
+                    photoPreview.classList.add('hidden');
+                    photoPlaceholder.innerHTML = '<div class="flex flex-col items-center cursor-pointer" onclick="event.stopPropagation(); viewPhoto(registroFotoBase64)"><svg class="w-12 h-12 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg><span class="text-xs font-bold text-slate-600">PDF Adjunto</span><span class="text-[10px] text-blue-500 underline">Click para ver</span></div>';
+                    photoPlaceholder.classList.remove('hidden');
+                } else {
+                    photoPlaceholder.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando texto</span></div>';
+                    const initialBase64 = await resizeAndResample(file);
+                    
+                    try {
+                        const res = await fetch('/api/process-image', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: initialBase64 })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.status === "success") {
+                            registroFotoBase64 = data.image;
+                        } else {
+                            throw new Error(data.message || "Error procesando imagen");
+                        }
+                    } catch (err) {
+                        console.error("Processing error:", err);
+                        showToast("No se pudo auto-recortar la foto. Usando original.");
+                        registroFotoBase64 = initialBase64;
                     }
-                } catch (err) {
-                    console.error("Processing error:", err);
-                    showToast("No se pudo auto-recortar la foto. Usando original.");
-                    registroFotoBase64 = initialBase64;
+                    
+                    photoPreview.src = registroFotoBase64;
+                    photoPreview.classList.remove('hidden');
+                    photoPlaceholder.classList.add('hidden');
                 }
                 
-                // Restoring placeholder content
-                photoPlaceholder.innerHTML = '<svg class="w-8 h-8 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><p class="text-xs font-semibold">Cámara o Archivo</p>';
-                photoPlaceholder.classList.add('text-slate-400', 'group-hover:text-blue-500');
+                // Restoring placeholder content if we removed it (not needed for PDF handled above)
+                if (file.type !== 'application/pdf') {
+                   // photoPlaceholder.innerHTML is already handled in the else block
+                }
                 
-                photoPreview.src = registroFotoBase64;
-                photoPreview.classList.remove('hidden');
-                photoPlaceholder.classList.add('hidden');
                 btnRemovePhoto.classList.remove('hidden');
-                btnRotatePhoto.classList.remove('hidden');
-                btnRotatePhoto.classList.add('flex');
+                btnRotatePhoto.classList.toggle('hidden', file.type === 'application/pdf');
+                btnRotatePhoto.classList.toggle('flex', file.type !== 'application/pdf');
+                btnViewPhoto.classList.remove('hidden');
             }
         };
 
@@ -740,6 +771,10 @@
             }
         };
 
+        btnViewPhoto.onclick = () => {
+            if (registroFotoBase64) viewPhoto(registroFotoBase64);
+        };
+
         btnRemovePhoto.onclick = () => {
             registroFotoBase64 = null;
             fotoInput.value = '';
@@ -748,6 +783,7 @@
             btnRemovePhoto.classList.add('hidden');
             btnRotatePhoto.classList.add('hidden');
             btnRotatePhoto.classList.remove('flex');
+            btnViewPhoto.classList.add('hidden');
         };
 
         // Photo handling for Edit Modal
@@ -757,39 +793,54 @@
         const editPhotoNoExist = document.getElementById('editPhotoNoExist');
         const btnRemoveEditPhoto = document.getElementById('btnRemoveEditPhoto');
         const btnRotateEditPhoto = document.getElementById('btnRotateEditPhoto');
+        const btnViewEditPhoto = document.getElementById('btnViewEditPhoto');
 
         editFotoInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                editPhotoNoExist.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando text</span></div>';
+                if (file.size > 900000) {
+                    showToast("El archivo es muy pesado (máx 900KB).");
+                    e.target.value = '';
+                    return;
+                }
+
+                editPhotoNoExist.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando archivo...</div>';
                 
-                const initialBase64 = await resizeAndResample(file);
-                
-                try {
-                    const res = await fetch('/api/process-image', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: initialBase64 })
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.status === "success") {
-                        editFotoBase64 = data.image;
-                    } else {
-                        throw new Error(data.message || "Error procesando imagen");
+                if (file.type === 'application/pdf') {
+                    editFotoBase64 = await readFileAsBase64(file);
+                    editPhotoPreview.classList.add('hidden');
+                    editPhotoNoExist.innerHTML = '<div class="flex flex-col items-center cursor-pointer" onclick="event.stopPropagation(); viewPhoto(editFotoBase64)"><svg class="w-16 h-16 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg><span class="font-bold text-slate-600">PDF Adjunto</span><span class="text-xs text-blue-500 underline">Click para ver</span></div>';
+                    editPhotoNoExist.classList.remove('hidden');
+                } else {
+                    editPhotoNoExist.innerHTML = '<div class="text-blue-500 font-bold animate-pulse text-center">Procesando imagen...<br><span class="text-xs font-normal">Recortando y alineando texto</span></div>';
+                    const initialBase64 = await resizeAndResample(file);
+                    
+                    try {
+                        const res = await fetch('/api/process-image', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: initialBase64 })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.status === "success") {
+                            editFotoBase64 = data.image;
+                        } else {
+                            throw new Error(data.message || "Error procesando imagen");
+                        }
+                    } catch (err) {
+                        console.error("Processing error:", err);
+                        showToast("No se pudo auto-recortar la foto. Usando original.");
+                        editFotoBase64 = initialBase64;
                     }
-                } catch (err) {
-                    console.error("Processing error:", err);
-                    showToast("No se pudo auto-recortar la foto. Usando original.");
-                    editFotoBase64 = initialBase64;
+                    
+                    editPhotoPreview.src = editFotoBase64;
+                    editPhotoPreview.classList.remove('hidden');
+                    editPhotoNoExist.classList.add('hidden');
                 }
                 
-                editPhotoNoExist.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
-                
-                editPhotoPreview.src = editFotoBase64;
-                editPhotoPreview.classList.remove('hidden');
-                editPhotoNoExist.classList.add('hidden');
                 btnRemoveEditPhoto.classList.remove('hidden');
-                btnRotateEditPhoto.classList.remove('hidden');
+                btnRotateEditPhoto.classList.toggle('hidden', file.type === 'application/pdf');
+                btnViewEditPhoto.classList.remove('hidden');
             }
         };
 
@@ -808,6 +859,10 @@
             }
         };
 
+        btnViewEditPhoto.onclick = () => {
+            if (editFotoBase64) viewPhoto(editFotoBase64);
+        };
+
         btnRemoveEditPhoto.onclick = () => {
             editFotoBase64 = null;
             editFotoInput.value = '';
@@ -815,6 +870,7 @@
             editPhotoNoExist.classList.remove('hidden');
             btnRemoveEditPhoto.classList.add('hidden');
             btnRotateEditPhoto.classList.add('hidden');
+            btnViewEditPhoto.classList.add('hidden');
         };
 
         // Submission Logic
@@ -1180,16 +1236,27 @@
             // Handle Photo in Edit Modal
             editFotoBase64 = entry.foto_recibo || null;
             if (editFotoBase64) {
-                editPhotoPreview.src = editFotoBase64;
-                editPhotoPreview.classList.remove('hidden');
-                editPhotoNoExist.classList.add('hidden');
+                if (editFotoBase64.startsWith('data:application/pdf')) {
+                    editPhotoPreview.classList.add('hidden');
+                    editPhotoNoExist.innerHTML = '<div class="flex flex-col items-center cursor-pointer" onclick="event.stopPropagation(); viewPhoto(editFotoBase64)"><svg class="w-16 h-16 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg><span class="font-bold text-slate-600">PDF Adjunto</span><span class="text-xs text-blue-500 underline">Click para ver</span></div>';
+                    editPhotoNoExist.classList.remove('hidden');
+                    btnRotateEditPhoto.classList.add('hidden');
+                    btnViewEditPhoto.classList.remove('hidden');
+                } else {
+                    editPhotoPreview.src = editFotoBase64;
+                    editPhotoPreview.classList.remove('hidden');
+                    editPhotoNoExist.classList.add('hidden');
+                    btnRotateEditPhoto.classList.remove('hidden');
+                    btnViewEditPhoto.classList.remove('hidden');
+                }
                 btnRemoveEditPhoto.classList.remove('hidden');
-                btnRotateEditPhoto.classList.remove('hidden');
             } else {
                 editPhotoPreview.classList.add('hidden');
+                editPhotoNoExist.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
                 editPhotoNoExist.classList.remove('hidden');
                 btnRemoveEditPhoto.classList.add('hidden');
                 btnRotateEditPhoto.classList.add('hidden');
+                btnViewEditPhoto.classList.add('hidden');
             }
 
             document.getElementById('editExpenseModal').classList.remove('hidden');
@@ -1307,10 +1374,17 @@
 
         function viewPhoto(base64) {
             if (!base64) return;
-            const viewer = document.getElementById('imageViewer');
-            const img = document.getElementById('viewerImage');
-            img.src = base64;
-            viewer.classList.remove('hidden');
+            if (base64.startsWith('data:application/pdf')) {
+                // Open PDF in a new tab for best experience
+                const win = window.open();
+                win.document.write('<iframe src="' + base64 + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+                win.document.title = "Comprobante PDF";
+            } else {
+                const viewer = document.getElementById('imageViewer');
+                const img = document.getElementById('viewerImage');
+                img.src = base64;
+                viewer.classList.remove('hidden');
+            }
         }
 
         function closeImageViewer() {

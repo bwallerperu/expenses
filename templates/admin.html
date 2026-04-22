@@ -543,7 +543,7 @@
                             <label class="w-full flex items-center justify-center p-3 mb-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer group text-blue-600">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
                                 <span class="text-sm font-bold">Seleccionar nueva foto</span>
-                                <input type="file" id="editExpFotoInput" accept="image/*" capture="environment" class="hidden">
+                                <input type="file" id="editExpFotoInput" accept="image/*,application/pdf" capture="environment" class="hidden">
                             </label>
                             
                             <!-- Bottom: Photo Preview Area -->
@@ -553,8 +553,11 @@
                                     <svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     <span class="text-sm">Sin foto adjunta</span>
                                 </div>
-                                <button type="button" id="btnRemoveEditExpPhoto" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-red-600">
+                                <button type="button" id="btnRemoveEditExpPhoto" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-red-600" title="Eliminar">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                                <button type="button" id="btnViewExpPhoto" class="absolute top-2 left-2 bg-green-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden shadow-md hover:bg-green-600" title="Ver Full">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
                             </div>
                         </div>
@@ -1249,7 +1252,11 @@
                     </td>
                     <td class="px-3 py-3 whitespace-nowrap text-gray-500">
                         <div class="flex items-center gap-2">
-                            ${item.foto_recibo ? '<svg class="w-5 h-5 text-blue-500 min-w-5 min-h-5" title="Contiene foto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>' : '<span class="w-5 h-5 min-w-5 min-h-5 inline-block"></span>'}
+                            ${item.foto_recibo ? 
+                                (item.foto_recibo.startsWith('data:application/pdf') ? 
+                                    '<svg class="w-5 h-5 text-red-500 min-w-5 min-h-5" title="Contiene PDF" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path></svg>' : 
+                                    '<svg class="w-5 h-5 text-blue-500 min-w-5 min-h-5" title="Contiene Foto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>') 
+                                : '<span class="w-5 h-5 min-w-5 min-h-5 inline-block"></span>'}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                 ${item.categoria || '-'}
                             </span>
@@ -1310,20 +1317,66 @@
             });
         }
 
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function viewPdf(base64) {
+             const win = window.open();
+             win.document.write('<iframe src="' + base64 + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+             win.document.title = "Comprobante PDF";
+        }
+
         let editExpFotoBase64 = null;
         const editExpFotoInput = document.getElementById('editExpFotoInput');
         const editExpPhotoPreview = document.getElementById('editExpPhoto');
         const editExpNoPhoto = document.getElementById('editExpNoPhoto');
         const btnRemoveEditExpPhoto = document.getElementById('btnRemoveEditExpPhoto');
+        const btnViewExpPhoto = document.getElementById('btnViewExpPhoto');
+
+        function viewFull(base64) {
+            if (!base64) return;
+            if (base64.startsWith('data:application/pdf')) {
+                viewPdf(base64);
+            } else {
+                const win = window.open();
+                win.document.write('<img src="' + base64 + '" style="max-width:100%; height:auto;">');
+                win.document.title = "Comprobante";
+            }
+        }
+
+        btnViewExpPhoto.onclick = () => {
+            if (editExpFotoBase64) viewFull(editExpFotoBase64);
+        };
 
         editExpFotoInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                editExpFotoBase64 = await resizeAndResample(file);
-                editExpPhotoPreview.src = editExpFotoBase64;
-                editExpPhotoPreview.classList.remove('hidden');
-                editExpNoPhoto.classList.add('hidden');
+                if (file.size > 900000) {
+                    showToast("El archivo es muy pesado (máx 900KB).");
+                    e.target.value = '';
+                    return;
+                }
+
+                if (file.type === 'application/pdf') {
+                    editExpFotoBase64 = await readFileAsBase64(file);
+                    editExpPhotoPreview.classList.add('hidden');
+                    editExpNoPhoto.innerHTML = '<div class="flex flex-col items-center cursor-pointer" onclick="viewPdf(editExpFotoBase64)"><svg class="w-16 h-16 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg><span class="font-bold text-slate-600">PDF Adjunto</span><span class="text-xs text-blue-500 underline">Click para ver</span></div>';
+                    editExpNoPhoto.classList.remove('hidden');
+                } else {
+                    editExpFotoBase64 = await resizeAndResample(file);
+                    editExpPhotoPreview.src = editExpFotoBase64;
+                    editExpPhotoPreview.classList.remove('hidden');
+                    editExpNoPhoto.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
+                    editExpNoPhoto.classList.add('hidden');
+                }
                 btnRemoveEditExpPhoto.classList.remove('hidden');
+                btnViewExpPhoto.classList.remove('hidden');
             }
         };
 
@@ -1331,8 +1384,10 @@
             editExpFotoBase64 = null;
             editExpFotoInput.value = '';
             editExpPhotoPreview.classList.add('hidden');
+            editExpNoPhoto.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
             editExpNoPhoto.classList.remove('hidden');
             btnRemoveEditExpPhoto.classList.add('hidden');
+            btnViewExpPhoto.classList.add('hidden');
         };
 
         function openExpenseModal(id) {
@@ -1357,15 +1412,24 @@
 
             editExpFotoBase64 = exp.foto_recibo || null;
             if (editExpFotoBase64) {
-                editExpPhotoPreview.src = editExpFotoBase64;
-                editExpPhotoPreview.classList.remove('hidden');
-                editExpNoPhoto.classList.add('hidden');
+                if (editExpFotoBase64.startsWith('data:application/pdf')) {
+                    editExpPhotoPreview.classList.add('hidden');
+                    editExpNoPhoto.innerHTML = '<div class="flex flex-col items-center cursor-pointer" onclick="viewPdf(editExpFotoBase64)"><svg class="w-16 h-16 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path></svg><span class="font-bold text-slate-600">PDF Adjunto</span><span class="text-xs text-blue-500 underline">Click para ver</span></div>';
+                    editExpNoPhoto.classList.remove('hidden');
+                } else {
+                    editExpPhotoPreview.src = editExpFotoBase64;
+                    editExpPhotoPreview.classList.remove('hidden');
+                    editExpNoPhoto.classList.add('hidden');
+                }
                 btnRemoveEditExpPhoto.classList.remove('hidden');
+                btnViewExpPhoto.classList.remove('hidden');
             } else {
                 editExpPhotoPreview.src = '';
                 editExpPhotoPreview.classList.add('hidden');
+                editExpNoPhoto.innerHTML = '<svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">Sin foto adjunta</span>';
                 editExpNoPhoto.classList.remove('hidden');
                 btnRemoveEditExpPhoto.classList.add('hidden');
+                btnViewExpPhoto.classList.add('hidden');
             }
 
             document.getElementById('expenseModal').classList.remove('hidden');
